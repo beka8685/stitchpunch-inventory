@@ -7,8 +7,6 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:system-ui,sans-serif;background:#f2f2f2;color:#1a1a1a;padding:1rem;max-width:720px;margin:0 auto}
-
-/* TOP BAR */
 .top-bar{display:flex;align-items:center;gap:8px;margin-bottom:1rem}
 .top-bar h1{flex:1;font-size:18px;font-weight:700}
 .total-pill{background:#fff;border:1px solid #ddd;border-radius:999px;padding:4px 12px;font-size:13px;color:#666;white-space:nowrap}
@@ -18,21 +16,15 @@ body{font-family:system-ui,sans-serif;background:#f2f2f2;color:#1a1a1a;padding:1
 .sync-dot.syncing{background:#FF6A00}
 .sync-dot.error{background:#e24b4a}
 .menu-btn{background:#fff;border:1px solid #ddd;border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;color:#555;white-space:nowrap}
-
-/* DRAWER */
 .drawer{display:none;background:#fff;border:1px solid #ddd;border-radius:12px;padding:12px;margin-bottom:1rem;flex-direction:column;gap:8px}
 .drawer.open{display:flex}
 .drawer-row{display:flex;gap:8px}
 .drawer-row button{flex:1;padding:10px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:1px solid #ddd;background:#f9f9f9;color:#555}
 .drawer-row .danger{color:#c0392b;border-color:#f0c0bc;background:#fff}
-
-/* CATEGORY FILTER */
 .cat-filter{display:flex;gap:6px;margin-bottom:1rem;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch}
 .cat-filter::-webkit-scrollbar{display:none}
 .cat-btn{background:#fff;border:1px solid #ddd;border-radius:999px;padding:6px 14px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;color:#555;flex-shrink:0}
 .cat-btn.active{background:#FF6A00;color:#fff;border-color:#FF6A00}
-
-/* AI BAR */
 .ai-bar{background:#fff;border:1px solid #ddd;border-radius:12px;padding:10px 12px;margin-bottom:.5rem;display:flex;gap:8px;align-items:flex-end}
 .ai-bar textarea{flex:1;border:none;background:transparent;resize:none;font-size:15px;color:#1a1a1a;font-family:inherit;outline:none;line-height:1.5;min-height:40px;max-height:110px;overflow-y:auto}
 .ai-bar textarea::placeholder{color:#bbb;font-size:14px}
@@ -43,8 +35,6 @@ body{font-family:system-ui,sans-serif;background:#f2f2f2;color:#1a1a1a;padding:1
 .ai-resp.ok{background:#e8f4ff;border:1px solid #b3d4f5;color:#1a4f8a}
 .ai-resp.err{background:#fdecea;border:1px solid #f5c0bc;color:#8a1a1a}
 .ai-close{position:absolute;top:8px;right:10px;background:none;border:none;cursor:pointer;font-size:20px;color:#aaa;line-height:1;padding:2px 6px}
-
-/* ADD FORM */
 .add-form{background:#fff;border:1px solid #ddd;border-radius:12px;padding:12px;margin-bottom:1rem}
 .add-form-title{font-size:12px;font-weight:700;color:#aaa;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
@@ -62,16 +52,12 @@ body{font-family:system-ui,sans-serif;background:#f2f2f2;color:#1a1a1a;padding:1
 .btn-undo{background:#fff;color:#555;border:1px solid #ddd;border-radius:8px;padding:11px 14px;font-size:14px;cursor:pointer;min-height:44px;white-space:nowrap}
 .btn-undo:disabled{opacity:.35}
 .add-fb{font-size:13px;color:#1e6e3d;display:none;text-align:center;margin-top:6px;font-weight:500}
-
-/* INVENTORY */
 .brand-section{margin-bottom:1.25rem}
 .brand-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .brand-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
 .brand-name{font-size:14px;font-weight:700;color:#333}
 .brand-total{font-size:13px;color:#999;margin-left:auto}
 .shirt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:8px}
-
-/* CARD */
 .shirt-card{background:#fff;border:1px solid #e5e5e5;border-radius:12px;padding:12px;position:relative}
 .card-cat{font-size:10px;color:#bbb;margin-bottom:2px;text-transform:uppercase;letter-spacing:.4px}
 .lbl-style{font-size:11px;color:#bbb;margin-bottom:4px;padding-right:26px}
@@ -87,7 +73,6 @@ body{font-family:system-ui,sans-serif;background:#f2f2f2;color:#1a1a1a;padding:1
 .new-badge{display:inline-block;background:#d4f5e2;color:#1e6e3d;font-size:10px;padding:2px 6px;border-radius:999px;margin-left:4px;font-weight:700;vertical-align:middle}
 .empty{text-align:center;padding:3rem 1rem;color:#bbb;font-size:15px}
 .loading{text-align:center;padding:3rem 1rem;color:#aaa;font-size:15px}
-
 @media(min-width:600px){
   body{padding:1.5rem}
   .form-grid{grid-template-columns:1fr 1fr 1fr}
@@ -102,7 +87,7 @@ body{font-family:system-ui,sans-serif;background:#f2f2f2;color:#1a1a1a;padding:1
 <div class="top-bar">
   <h1>⚡ StitchPunch <span class="sync-dot" id="sdot"></span></h1>
   <div class="total-pill"><b id="grand-total">–</b> items</div>
-  <button class="menu-btn" onclick="toggleMenu()" id="menu-btn">⋮ Menu</button>
+  <button class="menu-btn" id="menu-btn" onclick="toggleMenu()">⋮ Menu</button>
 </div>
 
 <div class="drawer" id="drawer">
@@ -112,27 +97,24 @@ body{font-family:system-ui,sans-serif;background:#f2f2f2;color:#1a1a1a;padding:1
   </div>
 </div>
 
-<!-- Category filter -->
-<div class="cat-filter" id="cat-filter">
-  <button class="cat-btn active" onclick="setFilter('All')" id="f-All">All</button>
-  <button class="cat-btn" onclick="setFilter('T-Shirt')" id="f-T-Shirt">👕 T-Shirts</button>
-  <button class="cat-btn" onclick="setFilter('Hat')" id="f-Hat">🧢 Hats</button>
-  <button class="cat-btn" onclick="setFilter('Hoodie')" id="f-Hoodie">🧥 Hoodies</button>
-  <button class="cat-btn" onclick="setFilter('Jacket')" id="f-Jacket">🫱 Jackets</button>
-  <button class="cat-btn" onclick="setFilter('Other')" id="f-Other">📦 Other</button>
+<div class="cat-filter">
+  <button class="cat-btn active" id="f-All" onclick="setFilter('All')">All</button>
+  <button class="cat-btn" id="f-T-Shirt" onclick="setFilter('T-Shirt')">👕 T-Shirts</button>
+  <button class="cat-btn" id="f-Hat" onclick="setFilter('Hat')">🧢 Hats</button>
+  <button class="cat-btn" id="f-Hoodie" onclick="setFilter('Hoodie')">🧥 Hoodies</button>
+  <button class="cat-btn" id="f-Jacket" onclick="setFilter('Jacket')">🫱 Jackets</button>
+  <button class="cat-btn" id="f-Other" onclick="setFilter('Other')">📦 Other</button>
 </div>
 
-<!-- AI Bar -->
 <div class="ai-bar">
   <textarea id="ai-input" placeholder='e.g. "add 3 large black Bella Canvas 3001"' rows="1" oninput="autoGrow(this)"></textarea>
   <button class="ai-send" id="ai-btn" onclick="runAI()">✨ AI</button>
 </div>
 <div class="ai-resp" id="ai-resp">
-  <button class="ai-close" onclick="closeResp()" aria-label="Close">&times;</button>
+  <button class="ai-close" onclick="closeResp()">&times;</button>
   <span id="ai-msg"></span>
 </div>
 
-<!-- Add form -->
 <div class="add-form">
   <div class="add-form-title">Add item</div>
   <div class="form-grid">
@@ -140,11 +122,8 @@ body{font-family:system-ui,sans-serif;background:#f2f2f2;color:#1a1a1a;padding:1
       <label>Category</label>
       <select id="f-cat" onchange="updateBrands()">
         <option value="">Select...</option>
-        <option>T-Shirt</option>
-        <option>Hat</option>
-        <option>Hoodie</option>
-        <option>Jacket</option>
-        <option>Other</option>
+        <option>T-Shirt</option><option>Hat</option><option>Hoodie</option>
+        <option>Jacket</option><option>Other</option>
       </select>
     </div>
     <div class="form-field">
@@ -204,7 +183,6 @@ body{font-family:system-ui,sans-serif;background:#f2f2f2;color:#1a1a1a;padding:1
 
 <div id="inv"><div class="loading">Connecting...</div></div>
 
-<!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
@@ -222,28 +200,24 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const COL = "inventory";
 
-// Brand/style data by category
 const CATALOG = {
-  'T-Shirt': {
-    brands: ['Bella Canvas','Gildan','Shaka Wear','Next Level','Comfort Colors','Bayside','Hanes','Port Authority','Champion','Other / Type own'],
-    styles: ['3001','7.5 oz Heavyweight','Heavy Cotton','Ultra Cotton','Dryblend 50/50','Super Max Heavyweight','Essential Active','Garment Dye','Performance','Other / Type own']
+  'T-Shirt':{
+    brands:['Bella Canvas','Gildan','Shaka Wear','Next Level','Comfort Colors','Bayside','Hanes','Port Authority','Champion','Other / Type own'],
+    styles:['3001','7.5 oz Heavyweight','Heavy Cotton','Ultra Cotton','Dryblend 50/50','Super Max Heavyweight','Essential Active','Garment Dye','Performance','Other / Type own']
   },
-  'Hat': {
-    brands: ['Richardson','Otto','Yupoong / Flexfit','Pacific Headwear','Mega Cap','Port Authority','New Era','Imperial','Other / Type own'],
-    styles: ['Structured Snapback','Unstructured Snapback','Trucker','Dad Hat / Low Profile','5-Panel','Beanie','Bucket Hat','Other / Type own']
+  'Hat':{
+    brands:['Richardson','Otto','Yupoong / Flexfit','Pacific Headwear','Mega Cap','Port Authority','New Era','Imperial','Other / Type own'],
+    styles:['Structured Snapback','Unstructured Snapback','Trucker','Dad Hat / Low Profile','5-Panel','Beanie','Bucket Hat','Other / Type own']
   },
-  'Hoodie': {
-    brands: ['Bella Canvas','Gildan','Independent Trading','Port & Company','Champion','Next Level','Other / Type own'],
-    styles: ['Pullover','Full Zip','Quarter Zip','Cropped','Other / Type own']
+  'Hoodie':{
+    brands:['Bella Canvas','Gildan','Independent Trading','Port & Company','Champion','Next Level','Other / Type own'],
+    styles:['Pullover','Full Zip','Quarter Zip','Cropped','Other / Type own']
   },
-  'Jacket': {
-    brands: ['Port Authority','Charles River','Harriton','Nike','The North Face','Ogio','Other / Type own'],
-    styles: ['Soft Shell','Fleece','Rain Jacket','Bomber','Puffer','Other / Type own']
+  'Jacket':{
+    brands:['Port Authority','Charles River','Harriton','Nike','The North Face','Ogio','Other / Type own'],
+    styles:['Soft Shell','Fleece','Rain Jacket','Bomber','Puffer','Other / Type own']
   },
-  'Other': {
-    brands: ['Other / Type own'],
-    styles: ['Other / Type own']
-  }
+  'Other':{brands:['Other / Type own'],styles:['Other / Type own']}
 };
 
 const BC = {
@@ -283,20 +257,11 @@ const DEFAULTS = [
   {id:'24',cat:'T-Shirt',brand:'Other',style:'Other / Type own',color:'Black',size:'L',qty:1,note:'ALLmade - DTF sample'},
 ];
 
-let inv = [];
-let hist = [];
-let newIds = new Set();
-let nid = 25;
-let debTimers = {};
-let activeFilter = 'All';
+let inv=[],hist=[],newIds=new Set(),nid=25,debTimers={},activeFilter='All';
 
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function clone(x){return JSON.parse(JSON.stringify(x));}
-
-function setSyncDot(state){
-  const d=document.getElementById('sdot');
-  d.className='sync-dot'+(state?' '+state:'');
-}
+function setSyncDot(s){const d=document.getElementById('sdot');d.className='sync-dot'+(s?' '+s:'');}
 
 async function fbSet(item){
   setSyncDot('syncing');
@@ -321,19 +286,19 @@ async function fbSetAll(items){
 }
 
 function startListener(){
-  onSnapshot(collection(db,COL), snap=>{
+  onSnapshot(collection(db,COL),snap=>{
     if(snap.empty){fbSetAll(DEFAULTS);return;}
     inv=snap.docs.map(d=>d.data());
     inv.sort((a,b)=>parseInt(a.id)-parseInt(b.id));
     nid=Math.max(...inv.map(s=>parseInt(s.id)),24)+1;
     render();setSyncDot('synced');
-  }, err=>{
+  },err=>{
     setSyncDot('error');
     document.getElementById('inv').innerHTML='<div class="empty">⚠️ Connection error. Check internet.</div>';
   });
 }
 
-function snap(){
+function snapHist(){
   hist.push(clone(inv));
   if(hist.length>50)hist.shift();
   document.getElementById('undo-btn').disabled=false;
@@ -345,38 +310,29 @@ async function undo(){
   await fbSetAll(prev);
 }
 
-// Dynamic form
 function updateBrands(){
   const cat=document.getElementById('f-cat').value;
-  const brandSel=document.getElementById('f-brand');
-  const styleSel=document.getElementById('f-style');
-  brandSel.innerHTML='<option value="">Select...</option>';
-  styleSel.innerHTML='<option value="">Select...</option>';
+  const bs=document.getElementById('f-brand');
+  const ss=document.getElementById('f-style');
+  bs.innerHTML='<option value="">Select...</option>';
+  ss.innerHTML='<option value="">Select...</option>';
   if(!cat||!CATALOG[cat])return;
-  CATALOG[cat].brands.forEach(b=>{
-    const o=document.createElement('option');o.value=b;o.textContent=b;brandSel.appendChild(o);
-  });
-  CATALOG[cat].styles.forEach(s=>{
-    const o=document.createElement('option');o.value=s;o.textContent=s;styleSel.appendChild(o);
-  });
+  CATALOG[cat].brands.forEach(b=>{const o=document.createElement('option');o.value=b;o.textContent=b;bs.appendChild(o);});
+  CATALOG[cat].styles.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;ss.appendChild(o);});
   checkCustomBrand();checkCustomStyle();
 }
 function checkCustomBrand(){
   const v=document.getElementById('f-brand').value;
-  const w=document.getElementById('brand-custom-wrap');
-  v==='Other / Type own'?w.classList.add('show'):w.classList.remove('show');
+  document.getElementById('brand-custom-wrap').classList.toggle('show',v==='Other / Type own');
 }
 function checkCustomStyle(){
   const v=document.getElementById('f-style').value;
-  const w=document.getElementById('style-custom-wrap');
-  v==='Other / Type own'?w.classList.add('show'):w.classList.remove('show');
+  document.getElementById('style-custom-wrap').classList.toggle('show',v==='Other / Type own');
 }
 function checkCustomColor(){
   const v=document.getElementById('f-color').value;
-  const w=document.getElementById('color-custom-wrap');
-  v==='Other / Type own'?w.classList.add('show'):w.classList.remove('show');
+  document.getElementById('color-custom-wrap').classList.toggle('show',v==='Other / Type own');
 }
-
 function setFilter(cat){
   activeFilter=cat;
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
@@ -392,18 +348,14 @@ async function addItem(){
   const size=document.getElementById('f-size').value;
   const qty=Math.max(1,parseInt(document.getElementById('f-qty').value)||1);
   const note=document.getElementById('f-note').value.trim();
-
   if(brand==='Other / Type own')brand=document.getElementById('f-brand-custom').value.trim()||'Other';
   if(style==='Other / Type own')style=document.getElementById('f-style-custom').value.trim()||'Other';
   if(color==='Other / Type own')color=document.getElementById('f-color-custom').value.trim()||'Other';
-
   if(!cat||!brand||!color||!size){alert('Please select Category, Brand, Color, and Size.');return;}
-
-  snap();
+  snapHist();
   const ex=inv.find(s=>s.cat===cat&&s.brand===brand&&s.style===style&&s.color===color&&s.size===size);
   if(ex){newIds.add(String(ex.id));await fbSet({...ex,qty:ex.qty+qty});}
   else{const id=String(nid++);newIds.add(id);await fbSet({id,cat,brand,style,color,size,qty,note});}
-
   ['f-cat','f-brand','f-style','f-color','f-size'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('f-qty').value='1';
   document.getElementById('f-note').value='';
@@ -413,7 +365,6 @@ async function addItem(){
   ['brand-custom-wrap','style-custom-wrap','color-custom-wrap'].forEach(id=>document.getElementById(id).classList.remove('show'));
   document.getElementById('f-brand').innerHTML='<option value="">Select category first</option>';
   document.getElementById('f-style').innerHTML='<option value="">Select...</option>';
-
   const fb=document.getElementById('add-fb');
   fb.style.display='block';
   setTimeout(()=>fb.style.display='none',2500);
@@ -422,14 +373,16 @@ async function addItem(){
 
 async function removeItem(id){
   if(!confirm('Remove this item?'))return;
-  snap();await fbDelete(id);
+  snapHist();
+  await fbDelete(id);
 }
+
 async function changeQty(id,delta){
   const s=inv.find(x=>String(x.id)===String(id));
   if(!s)return;
   const nq=Math.max(0,s.qty+delta);
   if(nq===s.qty)return;
-  if(!debTimers[id])snap();
+  if(!debTimers[id])snapHist();
   clearTimeout(debTimers[id]);
   debTimers[id]=setTimeout(()=>delete debTimers[id],1500);
   if(nq===0)await fbDelete(id);
@@ -453,13 +406,84 @@ function exportCSV(){
 
 async function resetToDefault(){
   if(!confirm('Reset to original recount? All changes will be lost.'))return;
-  snap();await fbSetAll(DEFAULTS);toggleMenu();
+  snapHist();await fbSetAll(DEFAULTS);toggleMenu();
 }
 
 function toggleMenu(){
   const d=document.getElementById('drawer');
   d.classList.toggle('open');
   document.getElementById('menu-btn').textContent=d.classList.contains('open')?'✕ Close':'⋮ Menu';
+}
+
+function autoGrow(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,110)+'px';}
+function closeResp(){document.getElementById('ai-resp').style.display='none';}
+function showResp(msg,err){
+  const box=document.getElementById('ai-resp');
+  box.className='ai-resp '+(err?'err':'ok');
+  document.getElementById('ai-msg').textContent=msg;
+  box.style.display='block';
+  if(!err)setTimeout(closeResp,7000);
+}
+
+async function runAI(){
+  const input=document.getElementById('ai-input').value.trim();
+  if(!input)return;
+  const btn=document.getElementById('ai-btn');
+  btn.disabled=true;btn.textContent='...';closeResp();
+  const sys=`You are an inventory assistant for StitchPunch, an embroidery business in Brooklyn NY.
+Current inventory: ${JSON.stringify(inv.map(s=>({id:s.id,cat:s.cat,brand:s.brand,style:s.style,color:s.color,size:s.size,qty:s.qty})))}
+Valid categories: T-Shirt, Hat, Hoodie, Jacket, Other
+Valid sizes: One Size, XS, S, M, L, XL, 2XL, 3XL
+For add: match existing entry if cat+brand+style+color+size all match, else create new.
+For remove: match by cat+brand+color+size.
+Respond ONLY with JSON (no markdown): {"action":"add|remove|none","items":[{"cat":"T-Shirt","brand":"","style":"","color":"","size":"","qty":1,"note":""}],"message":""}
+If unclear, use action none.`;
+  try{
+    const res=await fetch('/.netlify/functions/ai',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({system:sys,messages:[{role:'user',content:input}]})
+    });
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    if(!data||!data.content)throw new Error('Bad response from server');
+    const txt=data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+    const parsed=JSON.parse(txt.replace(/```json\s*/g,'').replace(/```/g,'').trim());
+    if(parsed.action==='none'){showResp(parsed.message||'Could not understand.',false);return;}
+    if(!parsed.items||!parsed.items.length){showResp('No items found.',true);return;}
+    snapHist();
+    for(const item of parsed.items){
+      const cat=(item.cat||'T-Shirt').trim();
+      const brand=(item.brand||'Other').trim();
+      const style=(item.style||'Other').trim();
+      const color=(item.color||'').trim();
+      const size=(item.size||'').trim();
+      const qty=Math.abs(parseInt(item.qty)||1);
+      const note=(item.note||'').trim();
+      if(!color||!size)continue;
+      if(parsed.action==='remove'){
+        const ex=inv.find(s=>s.cat===cat&&s.brand===brand&&s.color===color&&s.size===size)
+               ||inv.find(s=>s.brand===brand&&s.color===color&&s.size===size);
+        if(ex){
+          const nq=Math.max(0,ex.qty-qty);
+          if(nq===0)await fbDelete(ex.id);
+          else await fbSet({...ex,qty:nq});
+        }
+      }else{
+        const ex=inv.find(s=>s.cat===cat&&s.brand===brand&&s.style===style&&s.color===color&&s.size===size);
+        if(ex){newIds.add(String(ex.id));await fbSet({...ex,qty:ex.qty+qty});}
+        else{const id=String(nid++);newIds.add(id);await fbSet({id,cat,brand,style,color,size,qty,note});}
+      }
+    }
+    showResp(parsed.message||'Done!',false);
+    setTimeout(()=>{newIds.clear();render();},3000);
+  }catch(e){
+    console.error('AI error:',e);
+    showResp('Something went wrong: '+e.message,true);
+  }
+  btn.disabled=false;btn.innerHTML='✨ AI';
+  const ta=document.getElementById('ai-input');
+  ta.value='';ta.style.height='auto';
 }
 
 function render(){
@@ -478,16 +502,16 @@ function render(){
     const cards=items.map(s=>{
       const iN=newIds.has(String(s.id));
       return `<div class="shirt-card">
-        <button class="del-btn" onclick="window._del('${s.id}')">✕</button>
+        <button class="del-btn" onclick="window._SP_del('${s.id}')">✕</button>
         <div class="card-cat">${esc(s.cat||'T-Shirt')}</div>
         <div class="lbl-style">${esc(s.style)}${iN?'<span class="new-badge">new</span>':''}</div>
         <span class="color-size">${esc(s.color)} · ${esc(s.size)}</span>
         ${s.note?`<div class="card-note">${esc(s.note)}</div>`:''}
         <div class="qty-row">
           <div class="qty-ctrl">
-            <button class="qty-btn" onclick="window._chq('${s.id}',-1)">−</button>
+            <button class="qty-btn" onclick="window._SP_chq('${s.id}',-1)">−</button>
             <span class="qty-num">${s.qty}</span>
-            <button class="qty-btn" onclick="window._chq('${s.id}',1)">+</button>
+            <button class="qty-btn" onclick="window._SP_chq('${s.id}',1)">+</button>
           </div>
         </div>
       </div>`;
@@ -503,100 +527,26 @@ function render(){
   }).join('');
 }
 
-function autoGrow(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,110)+'px';}
-function closeResp(){document.getElementById('ai-resp').style.display='none';}
-function showResp(msg,err){
-  const box=document.getElementById('ai-resp');
-  box.className='ai-resp '+(err?'err':'ok');
-  document.getElementById('ai-msg').textContent=msg;
-  box.style.display='block';
-  if(!err)setTimeout(closeResp,7000);
-}
-
-async function runAI(){
-  const input=document.getElementById('ai-input').value.trim();
-  if(!input)return;
-  const btn=document.getElementById('ai-btn');
-  btn.disabled=true;btn.textContent='...';closeResp();
-
-  const sys=`You are an inventory assistant for StitchPunch, an embroidery business in Brooklyn NY.
-Current inventory: ${JSON.stringify(inv.map(s=>({id:s.id,cat:s.cat,brand:s.brand,style:s.style,color:s.color,size:s.size,qty:s.qty})))}
-Valid categories: T-Shirt, Hat, Hoodie, Jacket, Other
-Valid sizes: One Size, XS, S, M, L, XL, 2XL, 3XL
-For add: match existing entry if cat+brand+style+color+size all match, else create new.
-For remove: match by cat+brand+style+color+size.
-Respond ONLY with JSON (no markdown): {"action":"add|remove|none","items":[{"cat":"T-Shirt","brand":"","style":"","color":"","size":"","qty":1,"note":""}],"message":""}
-If unclear, action=none with explanation.`;
-
-  try{
-    const res=await fetch('/.netlify/functions/ai',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({system:sys,messages:[{role:'user',content:input}]})
-    });
-    if(!res.ok)throw new Error('HTTP '+res.status);
-    const data=await res.json();
-    if(!data||!data.content){console.error('Bad response:',data);throw new Error('Bad API response');}
-    const txt=data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
-    const parsed=JSON.parse(txt.replace(/```json\s*/g,'').replace(/```/g,'').trim());
-    if(parsed.action==='none'){showResp(parsed.message||'Could not understand.',false);return;}
-    if(!parsed.items||!parsed.items.length){showResp('No items in response.',true);return;}
-    snap();
-    for(const item of parsed.items){
-      const cat=(item.cat||'T-Shirt').trim();
-      const brand=(item.brand||'Other').trim();
-      const style=(item.style||'Other').trim();
-      const color=(item.color||'').trim();
-      const size=(item.size||'').trim();
-      const qty=Math.abs(parseInt(item.qty)||1);
-      const note=(item.note||'').trim();
-      if(!color||!size)continue;
-      if(parsed.action==='remove'){
-        const ex=inv.find(s=>s.cat===cat&&s.brand===brand&&s.style===style&&s.color===color&&s.size===size)
-               ||inv.find(s=>s.brand===brand&&s.color===color&&s.size===size);
-        if(ex){
-          const nq=Math.max(0,ex.qty-qty);
-          if(nq===0)await fbDelete(ex.id);
-          else await fbSet({...ex,qty:nq});
-        }
-      }else{
-        const ex=inv.find(s=>s.cat===cat&&s.brand===brand&&s.style===style&&s.color===color&&s.size===size);
-        if(ex){newIds.add(String(ex.id));await fbSet({...ex,qty:ex.qty+qty});}
-        else{const id=String(nid++);newIds.add(id);await fbSet({id,cat,brand,style,color,size,qty,note});}
-      }
-    }
-    showResp(parsed.message||'Done!',false);
-    setTimeout(()=>{newIds.clear();render();},3000);
-  }catch(e){
-    console.error(e);
-    showResp('Something went wrong. Try again or add manually.',true);
-  }
-  btn.disabled=false;btn.innerHTML='✨ AI';
-  const ta=document.getElementById('ai-input');
-  ta.value='';ta.style.height='auto';
-}
-
-window.runAI=runAI;
-window.autoGrow=autoGrow;
-window.closeResp=closeResp;
+// Expose ALL functions to global scope
+window._SP_del = removeItem;
+window._SP_chq = changeQty;
+window.addItem = addItem;
+window.undo = undo;
+window.toggleMenu = toggleMenu;
+window.exportCSV = exportCSV;
+window.resetToDefault = resetToDefault;
+window.setFilter = setFilter;
+window.updateBrands = updateBrands;
+window.checkCustomBrand = checkCustomBrand;
+window.checkCustomStyle = checkCustomStyle;
+window.checkCustomColor = checkCustomColor;
+window.runAI = runAI;
+window.autoGrow = autoGrow;
+window.closeResp = closeResp;
 
 document.getElementById('ai-input').addEventListener('keydown',e=>{
   if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();runAI();}
 });
-
-
-window._del=removeItem;
-window._chq=changeQty;
-window.addItem=addItem;
-window.undo=undo;
-window.toggleMenu=toggleMenu;
-window.exportCSV=exportCSV;
-window.resetToDefault=resetToDefault;
-window.setFilter=setFilter;
-window.updateBrands=updateBrands;
-window.checkCustomBrand=checkCustomBrand;
-window.checkCustomStyle=checkCustomStyle;
-window.checkCustomColor=checkCustomColor;
 
 startListener();
 </script>
