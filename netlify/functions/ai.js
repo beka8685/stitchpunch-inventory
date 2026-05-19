@@ -5,6 +5,7 @@ exports.handler = async (event) => {
 
   try {
     const { messages, system } = JSON.parse(event.body);
+    
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -19,13 +20,22 @@ exports.handler = async (event) => {
         messages
       })
     });
+
     const data = await res.json();
+    
     return {
       statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      },
       body: JSON.stringify(data)
     };
   } catch (e) {
-    return { statusCode: 500, body: JSON.stringify({ error: e.message }) };
+    return { 
+      statusCode: 500, 
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: e.message }) 
+    };
   }
 };
