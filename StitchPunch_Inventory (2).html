@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>StitchPunch Inventory</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:system-ui,sans-serif;background:#f2f2f2;color:#1a1a1a;padding:1rem;max-width:720px;margin:0 auto}
+
+/* TOP BAR */
+.top-bar{display:flex;align-items:center;gap:8px;margin-bottom:1rem}
+.top-bar h1{flex:1;font-size:18px;font-weight:700}
+.total-pill{background:#fff;border:1px solid #ddd;border-radius:999px;padding:4px 12px;font-size:13px;color:#666;white-space:nowrap}
+.total-pill b{color:#1a1a1a}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:#ccc;display:inline-block;margin-left:4px;vertical-align:middle;transition:background .4s}
+.sync-dot.synced{background:#4caf50}
+.sync-dot.syncing{background:#FF6A00}
+.sync-dot.error{background:#e24b4a}
+.menu-btn{background:#fff;border:1px solid #ddd;border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;color:#555;white-space:nowrap}
+
+/* DRAWER */
+.drawer{display:none;background:#fff;border:1px solid #ddd;border-radius:12px;padding:12px;margin-bottom:1rem;flex-direction:column;gap:8px}
+.drawer.open{display:flex}
+.drawer-row{display:flex;gap:8px}
+.drawer-row button{flex:1;padding:10px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:1px solid #ddd;background:#f9f9f9;color:#555}
+.drawer-row .danger{color:#c0392b;border-color:#f0c0bc;background:#fff}
+
+/* CATEGORY FILTER */
+.cat-filter{display:flex;gap:6px;margin-bottom:1rem;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch}
+.cat-filter::-webkit-scrollbar{display:none}
+.cat-btn{background:#fff;border:1px solid #ddd;border-radius:999px;padding:6px 14px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;color:#555;flex-shrink:0}
+.cat-btn.active{background:#FF6A00;color:#fff;border-color:#FF6A00}
+
+/* LOW STOCK BANNER */
+.low-stock-banner{background:#fff8e6;border:1px solid #ffd87a;border-radius:10px;padding:10px 14px;margin-bottom:1rem;font-size:13px;color:#7a5200;display:none}
+.low-stock-banner b{display:block;margin-bottom:4px}
+.low-stock-list{line-height:1.8}
+
+/* ADD FORM */
+.add-form{background:#fff;border:1px solid #ddd;border-radius:12px;padding:12px;margin-bottom:1rem}
+.add-form-title{font-size:12px;font-weight:700;color:#aaa;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.form-field{display:flex;flex-direction:column;gap:4px}
+.form-field label{font-size:12px;color:#888;font-weight:500}
+.form-field select,.form-field input{font-size:15px;padding:9px 10px;border-radius:8px;border:1px solid #ddd;background:#f9f9f9;color:#1a1a1a;width:100%;height:42px;-webkit-appearance:none;appearance:none}
+.form-field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23999' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+.form-field.full{grid-column:1/-1}
+.custom-input{display:none}
+.custom-input.show{display:flex}
+.form-row{display:flex;gap:8px;align-items:center}
+.form-row input[type=number]{width:75px;font-size:15px;padding:9px 10px;border-radius:8px;border:1px solid #ddd;background:#f9f9f9;height:42px;text-align:center}
+.btn-add{flex:1;background:#FF6A00;color:#fff;border:none;border-radius:8px;padding:11px;font-size:15px;font-weight:700;cursor:pointer;min-height:44px}
+.btn-add:active{background:#d45a00}
+.btn-undo{background:#fff;color:#555;border:1px solid #ddd;border-radius:8px;padding:11px 14px;font-size:14px;cursor:pointer;min-height:44px;white-space:nowrap}
+.btn-undo:disabled{opacity:.35}
+.add-fb{font-size:13px;color:#1e6e3d;display:none;text-align:center;margin-top:6px;font-weight:500}
+
+/* INVENTORY */
+.brand-section{margin-bottom:1.25rem}
+.brand-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.brand-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.brand-name{font-size:14px;font-weight:700;color:#333}
+.brand-total{font-size:13px;color:#999;margin-left:auto}
+.shirt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:8px}
+
+/* CARD */
+.shirt-card{background:#fff;border:1px solid #e5e5e5;border-radius:12px;padding:12px;position:relative}
+.shirt-card.low{border-color:#ffc107;background:#fffdf0}
+.card-cat{font-size:10px;color:#bbb;margin-bottom:2px;text-transform:uppercase;letter-spacing:.4px}
+.lbl-style{font-size:11px;color:#bbb;margin-bottom:4px;padding-right:26px}
+.color-size{font-size:14px;font-weight:600;color:#1a1a1a;margin-bottom:8px;display:block}
+.card-note{font-size:11px;color:#bbb;margin-bottom:8px;line-height:1.3}
+.low-badge{display:inline-block;background:#fff3cd;color:#856404;font-size:10px;padding:2px 6px;border-radius:999px;margin-bottom:6px;font-weight:600}
+.qty-row{display:flex;align-items:center;justify-content:space-between}
+.qty-ctrl{display:flex;align-items:center;gap:6px}
+.qty-btn{background:#f2f2f2;border:none;border-radius:8px;width:36px;height:36px;cursor:pointer;font-size:20px;color:#333;display:flex;align-items:center;justify-content:center}
+.qty-btn:active{background:#e0e0e0}
+.qty-num{font-size:22px;font-weight:700;color:#1a1a1a;min-width:28px;text-align:center}
+.del-btn{position:absolute;top:8px;right:8px;background:#fff0f0;border:1px solid #ffd0d0;border-radius:6px;cursor:pointer;color:#e24b4a;font-size:13px;line-height:1;padding:3px 7px;font-weight:700}
+.del-btn:active{background:#ffd0d0}
+.new-badge{display:inline-block;background:#d4f5e2;color:#1e6e3d;font-size:10px;padding:2px 6px;border-radius:999px;margin-left:4px;font-weight:700;vertical-align:middle}
+.empty{text-align:center;padding:3rem 1rem;color:#bbb;font-size:15px}
+.loading{text-align:center;padding:3rem 1rem;color:#aaa;font-size:15px}
+
+@media(min-width:600px){
+  body{padding:1.5rem}
+  .form-grid{grid-template-columns:1fr 1fr 1fr}
+  .shirt-grid{grid-template-columns:repeat(auto-fill,minmax(165px,1fr))}
+  .del-btn{opacity:0;transition:opacity .15s}
+  .shirt-card:hover .del-btn{opacity:1}
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <h1>⚡ StitchPunch <span class="sync-dot" id="sdot"></span></h1>
+  <div class="total-pill"><b id="grand-total">–</b> items</div>
+  <button class="menu-btn" onclick="toggleMenu()" id="menu-btn">⋮ Menu</button>
+</div>
+
+<div class="drawer" id="drawer">
+  <div class="drawer-row">
+    <button onclick="exportCSV()">⬇ Export CSV</button>
+    <button class="danger" onclick="resetToDefault()">↺ Reset</button>
+  </div>
+</div>
+
+<!-- Category filter -->
+<div class="cat-filter" id="cat-filter">
+  <button class="cat-btn active" onclick="setFilter('All')" id="f-All">All</button>
+  <button class="cat-btn" onclick="setFilter('T-Shirt')" id="f-T-Shirt">👕 T-Shirts</button>
+  <button class="cat-btn" onclick="setFilter('Hat')" id="f-Hat">🧢 Hats</button>
+  <button class="cat-btn" onclick="setFilter('Hoodie')" id="f-Hoodie">🧥 Hoodies</button>
+  <button class="cat-btn" onclick="setFilter('Jacket')" id="f-Jacket">🫱 Jackets</button>
+  <button class="cat-btn" onclick="setFilter('Other')" id="f-Other">📦 Other</button>
+</div>
+
+<!-- Low stock banner -->
+<div class="low-stock-banner" id="low-banner">
+  <b>⚠️ Low stock</b>
+  <div class="low-stock-list" id="low-list"></div>
+</div>
+
+<!-- Add form -->
+<div class="add-form">
+  <div class="add-form-title">Add item</div>
+  <div class="form-grid">
+    <div class="form-field">
+      <label>Category</label>
+      <select id="f-cat" onchange="updateBrands()">
+        <option value="">Select...</option>
+        <option>T-Shirt</option>
+        <option>Hat</option>
+        <option>Hoodie</option>
+        <option>Jacket</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label>Brand</label>
+      <select id="f-brand" onchange="checkCustomBrand()">
+        <option value="">Select category first</option>
+      </select>
+    </div>
+    <div class="form-field full custom-input" id="brand-custom-wrap">
+      <label>Brand name (type it)</label>
+      <input type="text" id="f-brand-custom" placeholder="e.g. Champion, Port Authority...">
+    </div>
+    <div class="form-field">
+      <label>Style / Model</label>
+      <select id="f-style" onchange="checkCustomStyle()">
+        <option value="">Select...</option>
+      </select>
+    </div>
+    <div class="form-field full custom-input" id="style-custom-wrap">
+      <label>Style name (type it)</label>
+      <input type="text" id="f-style-custom" placeholder="e.g. 5-panel, trucker, zip-up...">
+    </div>
+    <div class="form-field">
+      <label>Color</label>
+      <select id="f-color" onchange="checkCustomColor()">
+        <option value="">Select...</option>
+        <option>Black</option><option>White</option><option>Navy</option><option>Gray</option>
+        <option>Green</option><option>Purple</option><option>Red</option><option>Royal Blue</option>
+        <option>Brown</option><option>Tan / Khaki</option><option>Orange</option><option>Pink</option>
+        <option>Other / Type own</option>
+      </select>
+    </div>
+    <div class="form-field full custom-input" id="color-custom-wrap">
+      <label>Color name (type it)</label>
+      <input type="text" id="f-color-custom" placeholder="e.g. Forest Green, Heather Gray...">
+    </div>
+    <div class="form-field">
+      <label>Size</label>
+      <select id="f-size">
+        <option value="">Select...</option>
+        <option>One Size</option><option>XS</option><option>S</option><option>M</option>
+        <option>L</option><option>XL</option><option>2XL</option><option>3XL</option>
+      </select>
+    </div>
+    <div class="form-field full">
+      <label>Note (optional)</label>
+      <input type="text" id="f-note" placeholder="e.g. Made in USA, structured, snapback...">
+    </div>
+  </div>
+  <div class="form-row">
+    <input type="number" id="f-qty" value="1" min="1" max="999">
+    <button class="btn-add" onclick="addItem()">+ Add</button>
+    <button class="btn-undo" id="undo-btn" onclick="undo()" disabled>↩ Undo</button>
+  </div>
+  <div class="add-fb" id="add-fb">✓ Added!</div>
+</div>
+
+<div id="inv"><div class="loading">Connecting...</div></div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC61dR9ojnyBE6cdSxowB0hEhXmFW7miso",
+  authDomain: "stitchpunch-inventory.firebaseapp.com",
+  projectId: "stitchpunch-inventory",
+  storageBucket: "stitchpunch-inventory.firebasestorage.app",
+  messagingSenderId: "98191164000",
+  appId: "1:98191164000:web:5b2adebe8eba701878f905"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const COL = "inventory";
+
+// Brand/style data by category
+const CATALOG = {
+  'T-Shirt': {
+    brands: ['Bella Canvas','Gildan','Shaka Wear','Next Level','Comfort Colors','Bayside','Hanes','Port Authority','Champion','Other / Type own'],
+    styles: ['3001','7.5 oz Heavyweight','Heavy Cotton','Ultra Cotton','Dryblend 50/50','Super Max Heavyweight','Essential Active','Garment Dye','Performance','Other / Type own']
+  },
+  'Hat': {
+    brands: ['Richardson','Otto','Yupoong / Flexfit','Pacific Headwear','Mega Cap','Port Authority','New Era','Imperial','Other / Type own'],
+    styles: ['Structured Snapback','Unstructured Snapback','Trucker','Dad Hat / Low Profile','5-Panel','Beanie','Bucket Hat','Other / Type own']
+  },
+  'Hoodie': {
+    brands: ['Bella Canvas','Gildan','Independent Trading','Port & Company','Champion','Next Level','Other / Type own'],
+    styles: ['Pullover','Full Zip','Quarter Zip','Cropped','Other / Type own']
+  },
+  'Jacket': {
+    brands: ['Port Authority','Charles River','Harriton','Nike','The North Face','Ogio','Other / Type own'],
+    styles: ['Soft Shell','Fleece','Rain Jacket','Bomber','Puffer','Other / Type own']
+  },
+  'Other': {
+    brands: ['Other / Type own'],
+    styles: ['Other / Type own']
+  }
+};
+
+const BC = {
+  'Bella Canvas':'#185FA5','Gildan':'#A32D2D','Shaka Wear':'#3B6D11',
+  'Next Level':'#534AB7','Comfort Colors':'#993C1D','Bayside':'#0F6E56',
+  'Hanes':'#854F0B','Richardson':'#2E4057','Otto':'#1B6CA8',
+  'Yupoong / Flexfit':'#6B3FA0','Pacific Headwear':'#0F6E56',
+  'Port Authority':'#C0392B','Champion':'#1A5276','New Era':'#154360',
+  'Independent Trading':'#784212','Charles River':'#1E8449',
+  'Other / Type own':'#5F5E5A','Other':'#5F5E5A'
+};
+
+const LOW_STOCK = 3;
+
+const DEFAULTS = [
+  {id:'1',cat:'T-Shirt',brand:'Bella Canvas',style:'3001',color:'Black',size:'S',qty:4,note:''},
+  {id:'2',cat:'T-Shirt',brand:'Bella Canvas',style:'3001',color:'Black',size:'M',qty:7,note:'1 Made in USA'},
+  {id:'3',cat:'T-Shirt',brand:'Bella Canvas',style:'3001',color:'Black',size:'L',qty:2,note:''},
+  {id:'4',cat:'T-Shirt',brand:'Bella Canvas',style:'3001',color:'Black',size:'XL',qty:2,note:''},
+  {id:'5',cat:'T-Shirt',brand:'Bella Canvas',style:'3001',color:'White',size:'M',qty:4,note:''},
+  {id:'6',cat:'T-Shirt',brand:'Bella Canvas',style:'7.5 oz Heavyweight',color:'White',size:'L',qty:2,note:''},
+  {id:'7',cat:'T-Shirt',brand:'Bella Canvas',style:'7.5 oz Heavyweight',color:'Black',size:'M',qty:1,note:''},
+  {id:'8',cat:'T-Shirt',brand:'Bella Canvas',style:'7.5 oz Heavyweight',color:'Green',size:'M',qty:1,note:''},
+  {id:'9',cat:'T-Shirt',brand:'Gildan',style:'Heavy Cotton',color:'White',size:'XL',qty:2,note:'Budget feel'},
+  {id:'10',cat:'T-Shirt',brand:'Gildan',style:'Heavy Cotton',color:'White',size:'L',qty:2,note:'Slightly softer'},
+  {id:'11',cat:'T-Shirt',brand:'Gildan',style:'Heavy Cotton',color:'Black',size:'XL',qty:2,note:''},
+  {id:'12',cat:'T-Shirt',brand:'Gildan',style:'Heavy Cotton',color:'Black',size:'L',qty:2,note:''},
+  {id:'13',cat:'T-Shirt',brand:'Gildan',style:'Ultra Cotton',color:'Black',size:'XL',qty:1,note:''},
+  {id:'14',cat:'T-Shirt',brand:'Gildan',style:'Ultra Cotton',color:'Black',size:'L',qty:2,note:''},
+  {id:'15',cat:'T-Shirt',brand:'Gildan',style:'Dryblend 50/50',color:'Black',size:'XL',qty:2,note:'50/50 poly'},
+  {id:'16',cat:'T-Shirt',brand:'Gildan',style:'Dryblend 50/50',color:'Black',size:'L',qty:2,note:''},
+  {id:'17',cat:'T-Shirt',brand:'Shaka Wear',style:'Super Max Heavyweight',color:'Black',size:'L',qty:1,note:''},
+  {id:'18',cat:'T-Shirt',brand:'Shaka Wear',style:'Super Max Heavyweight',color:'Black',size:'M',qty:1,note:''},
+  {id:'19',cat:'T-Shirt',brand:'Shaka Wear',style:'Essential Active',color:'Black',size:'S',qty:1,note:'Lighter weight'},
+  {id:'20',cat:'T-Shirt',brand:'Next Level',style:'Other / Type own',color:'Navy',size:'L',qty:1,note:'Made in Nicaragua'},
+  {id:'21',cat:'T-Shirt',brand:'Comfort Colors',style:'Garment Dye',color:'Black',size:'XL',qty:1,note:'Runs small'},
+  {id:'22',cat:'T-Shirt',brand:'Bayside',style:'Other / Type own',color:'Green',size:'L',qty:1,note:'100% USA made'},
+  {id:'23',cat:'T-Shirt',brand:'Hanes',style:'Other / Type own',color:'Purple',size:'L',qty:3,note:'No side seams'},
+  {id:'24',cat:'T-Shirt',brand:'Other',style:'Other / Type own',color:'Black',size:'L',qty:1,note:'ALLmade - DTF sample'},
+];
+
+let inv = [];
+let hist = [];
+let newIds = new Set();
+let nid = 25;
+let debTimers = {};
+let activeFilter = 'All';
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function clone(x){return JSON.parse(JSON.stringify(x));}
+
+function setSyncDot(state){
+  const d=document.getElementById('sdot');
+  d.className='sync-dot'+(state?' '+state:'');
+}
+
+async function fbSet(item){
+  setSyncDot('syncing');
+  try{await setDoc(doc(db,COL,String(item.id)),item);setSyncDot('synced');}
+  catch(e){setSyncDot('error');console.error(e);}
+}
+async function fbDelete(id){
+  setSyncDot('syncing');
+  try{await deleteDoc(doc(db,COL,String(id)));setSyncDot('synced');}
+  catch(e){setSyncDot('error');console.error(e);}
+}
+async function fbSetAll(items){
+  setSyncDot('syncing');
+  try{
+    const snap=await getDocs(collection(db,COL));
+    const batch=writeBatch(db);
+    snap.forEach(d=>batch.delete(d.ref));
+    items.forEach(item=>batch.set(doc(db,COL,String(item.id)),item));
+    await batch.commit();
+    setSyncDot('synced');
+  }catch(e){setSyncDot('error');console.error(e);}
+}
+
+function startListener(){
+  onSnapshot(collection(db,COL), snap=>{
+    if(snap.empty){fbSetAll(DEFAULTS);return;}
+    inv=snap.docs.map(d=>d.data());
+    inv.sort((a,b)=>parseInt(a.id)-parseInt(b.id));
+    nid=Math.max(...inv.map(s=>parseInt(s.id)),24)+1;
+    render();setSyncDot('synced');
+  }, err=>{
+    setSyncDot('error');
+    document.getElementById('inv').innerHTML='<div class="empty">⚠️ Connection error. Check internet.</div>';
+  });
+}
+
+function snap(){
+  hist.push(clone(inv));
+  if(hist.length>50)hist.shift();
+  document.getElementById('undo-btn').disabled=false;
+}
+async function undo(){
+  if(!hist.length)return;
+  const prev=hist.pop();
+  if(!hist.length)document.getElementById('undo-btn').disabled=true;
+  await fbSetAll(prev);
+}
+
+// Dynamic form
+function updateBrands(){
+  const cat=document.getElementById('f-cat').value;
+  const brandSel=document.getElementById('f-brand');
+  const styleSel=document.getElementById('f-style');
+  brandSel.innerHTML='<option value="">Select...</option>';
+  styleSel.innerHTML='<option value="">Select...</option>';
+  if(!cat||!CATALOG[cat])return;
+  CATALOG[cat].brands.forEach(b=>{
+    const o=document.createElement('option');o.value=b;o.textContent=b;brandSel.appendChild(o);
+  });
+  CATALOG[cat].styles.forEach(s=>{
+    const o=document.createElement('option');o.value=s;o.textContent=s;styleSel.appendChild(o);
+  });
+  checkCustomBrand();checkCustomStyle();
+}
+function checkCustomBrand(){
+  const v=document.getElementById('f-brand').value;
+  const w=document.getElementById('brand-custom-wrap');
+  v==='Other / Type own'?w.classList.add('show'):w.classList.remove('show');
+}
+function checkCustomStyle(){
+  const v=document.getElementById('f-style').value;
+  const w=document.getElementById('style-custom-wrap');
+  v==='Other / Type own'?w.classList.add('show'):w.classList.remove('show');
+}
+function checkCustomColor(){
+  const v=document.getElementById('f-color').value;
+  const w=document.getElementById('color-custom-wrap');
+  v==='Other / Type own'?w.classList.add('show'):w.classList.remove('show');
+}
+
+function setFilter(cat){
+  activeFilter=cat;
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('f-'+cat).classList.add('active');
+  render();
+}
+
+async function addItem(){
+  const cat=document.getElementById('f-cat').value;
+  let brand=document.getElementById('f-brand').value;
+  let style=document.getElementById('f-style').value||'Other';
+  let color=document.getElementById('f-color').value;
+  const size=document.getElementById('f-size').value;
+  const qty=Math.max(1,parseInt(document.getElementById('f-qty').value)||1);
+  const note=document.getElementById('f-note').value.trim();
+
+  if(brand==='Other / Type own')brand=document.getElementById('f-brand-custom').value.trim()||'Other';
+  if(style==='Other / Type own')style=document.getElementById('f-style-custom').value.trim()||'Other';
+  if(color==='Other / Type own')color=document.getElementById('f-color-custom').value.trim()||'Other';
+
+  if(!cat||!brand||!color||!size){alert('Please select Category, Brand, Color, and Size.');return;}
+
+  snap();
+  const ex=inv.find(s=>s.cat===cat&&s.brand===brand&&s.style===style&&s.color===color&&s.size===size);
+  if(ex){newIds.add(String(ex.id));await fbSet({...ex,qty:ex.qty+qty});}
+  else{const id=String(nid++);newIds.add(id);await fbSet({id,cat,brand,style,color,size,qty,note});}
+
+  ['f-cat','f-brand','f-style','f-color','f-size'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-qty').value='1';
+  document.getElementById('f-note').value='';
+  document.getElementById('f-brand-custom').value='';
+  document.getElementById('f-style-custom').value='';
+  document.getElementById('f-color-custom').value='';
+  ['brand-custom-wrap','style-custom-wrap','color-custom-wrap'].forEach(id=>document.getElementById(id).classList.remove('show'));
+  document.getElementById('f-brand').innerHTML='<option value="">Select category first</option>';
+  document.getElementById('f-style').innerHTML='<option value="">Select...</option>';
+
+  const fb=document.getElementById('add-fb');
+  fb.style.display='block';
+  setTimeout(()=>fb.style.display='none',2500);
+  setTimeout(()=>{newIds.clear();render();},3000);
+}
+
+async function removeItem(id){
+  if(!confirm('Remove this item?'))return;
+  snap();await fbDelete(id);
+}
+async function changeQty(id,delta){
+  const s=inv.find(x=>String(x.id)===String(id));
+  if(!s)return;
+  const nq=Math.max(0,s.qty+delta);
+  if(nq===s.qty)return;
+  if(!debTimers[id])snap();
+  clearTimeout(debTimers[id]);
+  debTimers[id]=setTimeout(()=>delete debTimers[id],1500);
+  if(nq===0)await fbDelete(id);
+  else await fbSet({...s,qty:nq});
+}
+
+function exportCSV(){
+  const rows=[['Category','Brand','Style','Color','Size','Qty','Notes']];
+  const cats=[...new Set(inv.map(s=>s.cat||'T-Shirt'))];
+  cats.forEach(c=>{
+    inv.filter(s=>(s.cat||'T-Shirt')===c).forEach(s=>rows.push([s.cat||'T-Shirt',s.brand,s.style,s.color,s.size,s.qty,s.note||'']));
+    rows.push([]);
+  });
+  rows.push(['','','','','TOTAL',inv.reduce((a,s)=>a+s.qty,0),'']);
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='StitchPunch_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();toggleMenu();
+}
+
+async function resetToDefault(){
+  if(!confirm('Reset to original recount? All changes will be lost.'))return;
+  snap();await fbSetAll(DEFAULTS);toggleMenu();
+}
+
+function toggleMenu(){
+  const d=document.getElementById('drawer');
+  d.classList.toggle('open');
+  document.getElementById('menu-btn').textContent=d.classList.contains('open')?'✕ Close':'⋮ Menu';
+}
+
+function updateLowStock(){
+  const low=inv.filter(s=>s.qty<=LOW_STOCK&&s.qty>0);
+  const banner=document.getElementById('low-banner');
+  const list=document.getElementById('low-list');
+  if(!low.length){banner.style.display='none';return;}
+  banner.style.display='block';
+  list.innerHTML=low.map(s=>`${s.brand} ${s.style} ${s.color} ${s.size} — <b>${s.qty} left</b>`).join('<br>');
+}
+
+function render(){
+  const filtered=activeFilter==='All'?inv:inv.filter(s=>(s.cat||'T-Shirt')===activeFilter);
+  const brands=[...new Set(filtered.map(s=>s.brand))];
+  document.getElementById('grand-total').textContent=inv.reduce((a,s)=>a+s.qty,0);
+  updateLowStock();
+  const el=document.getElementById('inv');
+  if(!filtered.length){
+    el.innerHTML=`<div class="empty">${activeFilter==='All'?'No items yet. Add some above!':'No '+activeFilter+' items yet.'}</div>`;
+    return;
+  }
+  el.innerHTML=brands.map(brand=>{
+    const items=filtered.filter(s=>s.brand===brand);
+    const tot=items.reduce((a,s)=>a+s.qty,0);
+    const dot=BC[brand]||'#888';
+    const cards=items.map(s=>{
+      const iN=newIds.has(String(s.id));
+      const isLow=s.qty<=LOW_STOCK;
+      return `<div class="shirt-card${isLow?' low':''}">
+        <button class="del-btn" onclick="window._del('${s.id}')">✕</button>
+        <div class="card-cat">${esc(s.cat||'T-Shirt')}</div>
+        <div class="lbl-style">${esc(s.style)}${iN?'<span class="new-badge">new</span>':''}</div>
+        <span class="color-size">${esc(s.color)} · ${esc(s.size)}</span>
+        ${isLow?'<div class="low-badge">⚠️ Low stock</div>':''}
+        ${s.note?`<div class="card-note">${esc(s.note)}</div>`:''}
+        <div class="qty-row">
+          <div class="qty-ctrl">
+            <button class="qty-btn" onclick="window._chq('${s.id}',-1)">−</button>
+            <span class="qty-num">${s.qty}</span>
+            <button class="qty-btn" onclick="window._chq('${s.id}',1)">+</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    return `<div class="brand-section">
+      <div class="brand-header">
+        <span class="brand-dot" style="background:${dot}"></span>
+        <span class="brand-name">${esc(brand)}</span>
+        <span class="brand-total">${tot} item${tot!==1?'s':''}</span>
+      </div>
+      <div class="shirt-grid">${cards}</div>
+    </div>`;
+  }).join('');
+}
+
+window._del=removeItem;
+window._chq=changeQty;
+window.addItem=addItem;
+window.undo=undo;
+window.toggleMenu=toggleMenu;
+window.exportCSV=exportCSV;
+window.resetToDefault=resetToDefault;
+window.setFilter=setFilter;
+window.updateBrands=updateBrands;
+window.checkCustomBrand=checkCustomBrand;
+window.checkCustomStyle=checkCustomStyle;
+window.checkCustomColor=checkCustomColor;
+
+startListener();
+</script>
+</body>
+</html>
