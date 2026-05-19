@@ -536,6 +536,7 @@ If unclear, action=none with explanation.`;
     });
     if(!res.ok)throw new Error('HTTP '+res.status);
     const data=await res.json();
+    if(!data||!data.content){console.error('Bad response:',data);throw new Error('Bad API response');}
     const txt=data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
     const parsed=JSON.parse(txt.replace(/```json\s*/g,'').replace(/```/g,'').trim());
     if(parsed.action==='none'){showResp(parsed.message||'Could not understand.',false);return;}
