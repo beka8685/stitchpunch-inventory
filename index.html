@@ -309,6 +309,54 @@ function clone(x){return JSON.parse(JSON.stringify(x));}
 function $(id){return document.getElementById(id);}
 function setSyncDot(s){$('sdot').className='sync-dot'+(s?' '+s:'');}
 
+
+// ── BRAND NORMALIZER ──
+function normalizeBrand(raw) {
+  if (!raw) return 'Other';
+  const s = raw.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (s.includes('bella') || s.includes('bella canvas') || s === 'bc') return 'Bella Canvas';
+  if (s.includes('gildan') || s === 'gd') return 'Gildan';
+  if (s.includes('shaka') || s.includes('shaka wear') || s === 'sw') return 'Shaka Wear';
+  if (s.includes('next level') || s === 'nl') return 'Next Level';
+  if (s.includes('comfort colors') || s === 'cc') return 'Comfort Colors';
+  if (s.includes('bayside')) return 'Bayside';
+  if (s.includes('hanes')) return 'Hanes';
+  if (s.includes('richardson')) return 'Richardson';
+  if (s.includes('yupoong') || s.includes('flexfit') || s.includes('yp classics')) return 'Yupoong / Flexfit';
+  if (s.includes('port authority')) return 'Port Authority';
+  if (s.includes('champion')) return 'Champion';
+  if (s.includes('new era')) return 'New Era';
+  if (s.includes('independent trading') || s.includes('ind trading')) return 'Independent Trading';
+  if (s.includes('otto')) return 'Otto';
+  if (s.includes('pacific headwear')) return 'Pacific Headwear';
+  if (s.includes('charles river')) return 'Charles River';
+  if (s.includes('allmade') || s.includes('all made')) return 'Other';
+  return raw.trim(); // keep original if no match
+}
+
+function normalizeStyle(brand, raw) {
+  if (!raw) return 'Other';
+  const s = raw.toLowerCase();
+  if (brand === 'Bella Canvas') {
+    if (s.includes('3001') || s.includes('unisex jersey') || s.includes('classic tee')) return '3001';
+    if (s.includes('3010') || s.includes('heavyweight') || s.includes('6 oz') || s.includes('6oz')) return '7.5 oz Heavyweight';
+  }
+  if (brand === 'Gildan') {
+    if (s.includes('heavy cotton') || s.includes('5000')) return 'Heavy Cotton';
+    if (s.includes('ultra cotton') || s.includes('2000')) return 'Ultra Cotton';
+    if (s.includes('dryblend') || s.includes('dry blend') || s.includes('8000')) return 'Dryblend 50/50';
+  }
+  if (brand === 'Shaka Wear') {
+    if (s.includes('super max') || s.includes('supermax')) return 'Super Max Heavyweight';
+    if (s.includes('essential') || s.includes('active')) return 'Essential Active';
+  }
+  if (brand === 'Yupoong / Flexfit') {
+    if (s.includes('6006') || s.includes('trucker') || s.includes('retro')) return 'Trucker';
+    if (s.includes('6210') || s.includes('flat bill') || s.includes('210')) return 'Structured Snapback';
+  }
+  return raw.trim();
+}
+
 // ── FIREBASE WRAPPERS ──
 async function fbSet(item){
   setSyncDot('syncing');
@@ -551,10 +599,10 @@ Respond ONLY with raw JSON no markdown:
     snapHist();
     for(const item of parsed.items){
       const cat=(item.cat||'T-Shirt').trim();
-      const brand=(item.brand||'Other').trim();
-      const style=(item.style||'Other').trim();
+      const brand=normalizeBrand(item.brand);
+      const style=normalizeStyle(brand, item.style||'Other');
       const color=(item.color||'').trim();
-      const size=(item.size||'').trim();
+      const size=(item.size||'').trim().toUpperCase().replace('2X','2XL').replace('3X','3XL');
       const qty=Math.abs(parseInt(item.qty)||1);
       const note=(item.note||'').trim();
       if(!color||!size)continue;
@@ -612,14 +660,15 @@ $('inv-confirm-btn').addEventListener('click',async()=>{
   snapHist();
   for(const item of itemsToAdd){
     const cat=(item.cat||'T-Shirt').trim();
-    const brand=(item.brand||'Other').trim();
-    const style=(item.style||'Other').trim();
+    const brand=normalizeBrand(item.brand);
+    const style=normalizeStyle(brand, item.style||'Other');
     const color=(item.color||'').trim();
-    const size=(item.size||'').trim();
+    const size=(item.size||'').trim().toUpperCase().replace('2X','2XL').replace('3X','3XL');
     const qty=Math.abs(parseInt(item.qty)||1);
     const note=(item.note||'').trim();
     if(!color||!size)continue;
-    const ex=inv.find(s=>s.cat===cat&&s.brand===brand&&s.style===style&&s.color===color&&s.size===size);
+    // Try to match existing — fuzzy on color too
+    const ex=inv.find(s=>s.cat===cat&&s.brand===brand&&s.style===style&&s.color.toLowerCase()===color.toLowerCase()&&s.size===size);
     if(ex){newIds.add(String(ex.id));await fbSet({...ex,qty:ex.qty+qty});}
     else{const id=String(nid++);newIds.add(id);await fbSet({id,cat,brand,style,color,size,qty,note});}
   }
