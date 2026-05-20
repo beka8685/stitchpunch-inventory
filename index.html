@@ -536,10 +536,10 @@ For REMOVE: match brand+color+size, reduce qty (delete if 0).
 Respond ONLY with raw JSON no markdown:
 {"action":"add|remove|none","items":[{"cat":"T-Shirt","brand":"","style":"","color":"","size":"","qty":1,"note":""}],"message":""}`;
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
+    const res=await fetch('/.netlify/functions/ai-inventory',{
       method:'POST',
-      headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1500,system:sys,messages:[{role:'user',content:input}]})
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({system:sys,messages:[{role:'user',content:input}]})
     });
     if(!res.ok)throw new Error('HTTP '+res.status);
     const data=await res.json();
@@ -644,19 +644,15 @@ async function parseInvoice(file){
     const msgContent=isPdf
       ?[{type:'document',source:{type:'base64',media_type:'application/pdf',data:base64}},{type:'text',text:'Extract all inventory items.'}]
       :[{type:'image',source:{type:'base64',media_type:file.type,data:base64}},{type:'text',text:'Extract all inventory items.'}];
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
+    const res=await fetch('/.netlify/functions/ai-inventory',{
       method:'POST',
-      headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({
-        model:'claude-haiku-4-5-20251001',max_tokens:2000,
-        system:`You are an inventory parser for StitchPunch, an embroidery and apparel business.
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({system:`You are an inventory parser for StitchPunch, an embroidery and apparel business.
 Read this invoice and extract every apparel/blank item ordered.
 Return ONLY a raw JSON array (no markdown, no explanation) of objects:
 [{"cat":"T-Shirt","brand":"","style":"","color":"","size":"","qty":1,"note":""}]
 Valid cats: T-Shirt, Hat, Hoodie, Jacket, Other. Default T-Shirt if unsure.
-Each line item = separate object. Different sizes/colors = separate objects.`,
-        messages:[{role:'user',content:msgContent}]
-      })
+Each line item = separate object. Different sizes/colors = separate objects.`,messages:[{role:'user',content:msgContent}]})
     });
     if(!res.ok)throw new Error('HTTP '+res.status);
     const data=await res.json();
