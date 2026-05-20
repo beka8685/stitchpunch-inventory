@@ -35,6 +35,21 @@ body{font-family:system-ui,sans-serif;background:#f2f2f2;color:#1a1a1a;padding:1
 .ai-resp.ok{background:#e8f4ff;border:1px solid #b3d4f5;color:#1a4f8a}
 .ai-resp.err{background:#fdecea;border:1px solid #f5c0bc;color:#8a1a1a}
 .ai-close{position:absolute;top:8px;right:10px;background:none;border:none;cursor:pointer;font-size:20px;color:#aaa;line-height:1;padding:2px 6px}
+.invoice-zone{border:1.5px dashed #ddd;border-radius:10px;padding:12px 14px;margin-bottom:.75rem;text-align:center;cursor:pointer;position:relative;font-size:13px;color:#aaa;transition:border-color .2s,background .2s}
+.invoice-zone:hover,.invoice-zone.drag-over{border-color:#FF6A00;background:#fff8f4;color:#FF6A00}
+.invoice-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.invoice-preview{background:#f9f9f9;border:1px solid #ddd;border-radius:10px;margin-bottom:.75rem;overflow:hidden;display:none}
+.invoice-preview.show{display:block}
+.invoice-preview-header{padding:8px 12px;font-size:12px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center}
+.invoice-preview-item{padding:8px 12px;border-bottom:1px solid #eee;font-size:13px;display:flex;align-items:center;gap:8px}
+.invoice-preview-item:last-of-type{border-bottom:none}
+.inv-qty-badge{background:#FF6A00;color:#fff;font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;white-space:nowrap;flex-shrink:0}
+.invoice-preview-actions{padding:8px 12px;display:flex;gap:8px;border-top:1px solid #eee}
+.inv-confirm{flex:1;background:#FF6A00;color:#fff;border:none;border-radius:8px;padding:9px;font-size:14px;font-weight:700;cursor:pointer}
+.inv-confirm:disabled{opacity:.5;cursor:not-allowed}
+.inv-cancel{background:#fff;color:#888;border:1px solid #ddd;border-radius:8px;padding:9px 14px;font-size:14px;cursor:pointer}
+.inv-remove{background:none;border:none;color:#ccc;font-size:18px;cursor:pointer;padding:0 6px;line-height:1;flex-shrink:0}
+.inv-remove:hover{color:#e24b4a}
 .add-form{background:#fff;border:1px solid #ddd;border-radius:12px;padding:12px;margin-bottom:1rem}
 .add-form-title{font-size:12px;font-weight:700;color:#aaa;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
@@ -87,32 +102,48 @@ body{font-family:system-ui,sans-serif;background:#f2f2f2;color:#1a1a1a;padding:1
 <div class="top-bar">
   <h1>⚡ StitchPunch <span class="sync-dot" id="sdot"></span></h1>
   <div class="total-pill"><b id="grand-total">–</b> items</div>
-  <button class="menu-btn" id="menu-btn" onclick="toggleMenu()">⋮ Menu</button>
+  <button class="menu-btn" id="menu-btn">⋮ Menu</button>
 </div>
 
 <div class="drawer" id="drawer">
   <div class="drawer-row">
-    <button onclick="exportCSV()">⬇ Export CSV</button>
-    <button class="danger" onclick="resetToDefault()">↺ Reset</button>
+    <button id="export-btn">⬇ Export CSV</button>
+    <button class="danger" id="reset-btn">↺ Reset</button>
   </div>
 </div>
 
 <div class="cat-filter">
-  <button class="cat-btn active" id="f-All" onclick="setFilter('All')">All</button>
-  <button class="cat-btn" id="f-T-Shirt" onclick="setFilter('T-Shirt')">👕 T-Shirts</button>
-  <button class="cat-btn" id="f-Hat" onclick="setFilter('Hat')">🧢 Hats</button>
-  <button class="cat-btn" id="f-Hoodie" onclick="setFilter('Hoodie')">🧥 Hoodies</button>
-  <button class="cat-btn" id="f-Jacket" onclick="setFilter('Jacket')">🫱 Jackets</button>
-  <button class="cat-btn" id="f-Other" onclick="setFilter('Other')">📦 Other</button>
+  <button class="cat-btn active" id="f-All">All</button>
+  <button class="cat-btn" id="f-T-Shirt">👕 T-Shirts</button>
+  <button class="cat-btn" id="f-Hat">🧢 Hats</button>
+  <button class="cat-btn" id="f-Hoodie">🧥 Hoodies</button>
+  <button class="cat-btn" id="f-Jacket">🫱 Jackets</button>
+  <button class="cat-btn" id="f-Other">📦 Other</button>
 </div>
 
 <div class="ai-bar">
-  <textarea id="ai-input" placeholder='e.g. "add 3 large black Bella Canvas 3001"' rows="1" oninput="autoGrow(this)"></textarea>
-  <button class="ai-send" id="ai-btn" onclick="runAI()">✨ AI</button>
+  <textarea id="ai-input" placeholder='e.g. "add 3 large black Bella Canvas 3001"' rows="1"></textarea>
+  <button class="ai-send" id="ai-btn">✨ AI</button>
 </div>
 <div class="ai-resp" id="ai-resp">
-  <button class="ai-close" onclick="closeResp()">&times;</button>
+  <button class="ai-close" id="ai-close-btn">&times;</button>
   <span id="ai-msg"></span>
+</div>
+
+<div class="invoice-zone" id="invoice-zone">
+  <input type="file" id="invoice-file" accept=".pdf,.jpg,.jpeg,.png,.webp">
+  <span id="inv-zone-text">📄 Drop invoice here or tap to upload &nbsp;·&nbsp; <strong style="color:#FF6A00">PDF, JPG, PNG</strong> — AI reads &amp; imports</span>
+</div>
+<div class="invoice-preview" id="invoice-preview">
+  <div class="invoice-preview-header">
+    <span id="inv-preview-title">Items found</span>
+    <span style="font-size:11px;font-weight:400">tap ✕ to remove any</span>
+  </div>
+  <div id="inv-preview-list"></div>
+  <div class="invoice-preview-actions">
+    <button class="inv-confirm" id="inv-confirm-btn">✓ Add to Inventory</button>
+    <button class="inv-cancel" id="inv-cancel-btn">Cancel</button>
+  </div>
 </div>
 
 <div class="add-form">
@@ -120,7 +151,7 @@ body{font-family:system-ui,sans-serif;background:#f2f2f2;color:#1a1a1a;padding:1
   <div class="form-grid">
     <div class="form-field">
       <label>Category</label>
-      <select id="f-cat" onchange="updateBrands()">
+      <select id="f-cat">
         <option value="">Select...</option>
         <option>T-Shirt</option><option>Hat</option><option>Hoodie</option>
         <option>Jacket</option><option>Other</option>
@@ -128,7 +159,7 @@ body{font-family:system-ui,sans-serif;background:#f2f2f2;color:#1a1a1a;padding:1
     </div>
     <div class="form-field">
       <label>Brand</label>
-      <select id="f-brand" onchange="checkCustomBrand()">
+      <select id="f-brand">
         <option value="">Select category first</option>
       </select>
     </div>
@@ -138,7 +169,7 @@ body{font-family:system-ui,sans-serif;background:#f2f2f2;color:#1a1a1a;padding:1
     </div>
     <div class="form-field">
       <label>Style / Model</label>
-      <select id="f-style" onchange="checkCustomStyle()">
+      <select id="f-style">
         <option value="">Select...</option>
       </select>
     </div>
@@ -148,7 +179,7 @@ body{font-family:system-ui,sans-serif;background:#f2f2f2;color:#1a1a1a;padding:1
     </div>
     <div class="form-field">
       <label>Color</label>
-      <select id="f-color" onchange="checkCustomColor()">
+      <select id="f-color">
         <option value="">Select...</option>
         <option>Black</option><option>White</option><option>Navy</option><option>Gray</option>
         <option>Green</option><option>Purple</option><option>Red</option><option>Royal Blue</option>
@@ -175,31 +206,46 @@ body{font-family:system-ui,sans-serif;background:#f2f2f2;color:#1a1a1a;padding:1
   </div>
   <div class="form-row">
     <input type="number" id="f-qty" value="1" min="1" max="999">
-    <button class="btn-add" onclick="addItem()">+ Add</button>
-    <button class="btn-undo" id="undo-btn" onclick="undo()" disabled>↩ Undo</button>
+    <button class="btn-add" id="add-btn">+ Add</button>
+    <button class="btn-undo" id="undo-btn" disabled>↩ Undo</button>
   </div>
   <div class="add-fb" id="add-fb">✓ Added!</div>
 </div>
 
 <div id="inv"><div class="loading">Connecting...</div></div>
 
+<!-- Step 1: tiny module just to init Firebase and expose db globally -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
-const firebaseConfig = {
+const app = initializeApp({
   apiKey: "AIzaSyC61dR9ojnyBE6cdSxowB0hEhXmFW7miso",
   authDomain: "stitchpunch-inventory.firebaseapp.com",
   projectId: "stitchpunch-inventory",
   storageBucket: "stitchpunch-inventory.firebasestorage.app",
   messagingSenderId: "98191164000",
   appId: "1:98191164000:web:5b2adebe8eba701878f905"
+});
+const db = getFirestore(app);
+
+// Expose Firebase methods globally so the regular script can use them
+window._FB = {
+  setDoc: (colName, id, data) => setDoc(doc(db, colName, String(id)), data),
+  deleteDoc: (colName, id) => deleteDoc(doc(db, colName, String(id))),
+  onSnapshot: (colName, cb, errCb) => onSnapshot(collection(db, colName), cb, errCb),
+  getDocs: (colName) => getDocs(collection(db, colName)),
+  writeBatch: () => writeBatch(db),
+  docRef: (colName, id) => doc(db, colName, String(id)),
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const COL = "inventory";
+// Signal to the regular script that Firebase is ready
+window.dispatchEvent(new Event('firebase-ready'));
+</script>
 
+<!-- Step 2: ALL app logic in a plain script — no module scope issues -->
+<script>
+const COL = 'inventory';
 const CATALOG = {
   'T-Shirt':{
     brands:['Bella Canvas','Gildan','Shaka Wear','Next Level','Comfort Colors','Bayside','Hanes','Port Authority','Champion','Other / Type own'],
@@ -219,7 +265,6 @@ const CATALOG = {
   },
   'Other':{brands:['Other / Type own'],styles:['Other / Type own']}
 };
-
 const BC = {
   'Bella Canvas':'#185FA5','Gildan':'#A32D2D','Shaka Wear':'#3B6D11',
   'Next Level':'#534AB7','Comfort Colors':'#993C1D','Bayside':'#0F6E56',
@@ -229,10 +274,9 @@ const BC = {
   'Independent Trading':'#784212','Charles River':'#1E8449',
   'Other / Type own':'#5F5E5A','Other':'#5F5E5A'
 };
-
 const DEFAULTS = [
   {id:'1',cat:'T-Shirt',brand:'Bella Canvas',style:'3001',color:'Black',size:'S',qty:4,note:''},
-  {id:'2',cat:'T-Shirt',brand:'Bella Canvas',style:'3001',color:'Black',size:'M',qty:7,note:'1 Made in USA'},
+  {id:'2',cat:'T-Shirt',brand:'Bella Canvas',style:'3001',color:'Black',size:'M',qty:8,note:'1 Made in USA'},
   {id:'3',cat:'T-Shirt',brand:'Bella Canvas',style:'3001',color:'Black',size:'L',qty:2,note:''},
   {id:'4',cat:'T-Shirt',brand:'Bella Canvas',style:'3001',color:'Black',size:'XL',qty:2,note:''},
   {id:'5',cat:'T-Shirt',brand:'Bella Canvas',style:'3001',color:'White',size:'M',qty:4,note:''},
@@ -257,139 +301,191 @@ const DEFAULTS = [
   {id:'24',cat:'T-Shirt',brand:'Other',style:'Other / Type own',color:'Black',size:'L',qty:1,note:'ALLmade - DTF sample'},
 ];
 
-let inv=[],hist=[],newIds=new Set(),nid=25,debTimers={},activeFilter='All';
+let inv=[], hist=[], newIds=new Set(), nid=25, debTimers={}, activeFilter='All', invoiceItems=[];
 
+// ── UTILS ──
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function clone(x){return JSON.parse(JSON.stringify(x));}
-function setSyncDot(s){const d=document.getElementById('sdot');d.className='sync-dot'+(s?' '+s:'');}
+function $(id){return document.getElementById(id);}
+function setSyncDot(s){$('sdot').className='sync-dot'+(s?' '+s:'');}
 
+// ── FIREBASE WRAPPERS ──
 async function fbSet(item){
   setSyncDot('syncing');
-  try{await setDoc(doc(db,COL,String(item.id)),item);setSyncDot('synced');}
-  catch(e){setSyncDot('error');console.error(e);}
+  try{await window._FB.setDoc(COL,item.id,item);setSyncDot('synced');}
+  catch(e){setSyncDot('error');console.error('fbSet error',e);}
 }
 async function fbDelete(id){
   setSyncDot('syncing');
-  try{await deleteDoc(doc(db,COL,String(id)));setSyncDot('synced');}
-  catch(e){setSyncDot('error');console.error(e);}
+  try{await window._FB.deleteDoc(COL,id);setSyncDot('synced');}
+  catch(e){setSyncDot('error');console.error('fbDelete error',e);}
 }
 async function fbSetAll(items){
   setSyncDot('syncing');
   try{
-    const snap=await getDocs(collection(db,COL));
-    const batch=writeBatch(db);
-    snap.forEach(d=>batch.delete(d.ref));
-    items.forEach(item=>batch.set(doc(db,COL,String(item.id)),item));
+    const snap = await window._FB.getDocs(COL);
+    const batch = window._FB.writeBatch();
+    snap.forEach(d=>batch.delete(window._FB.docRef(COL,d.id)));
+    items.forEach(item=>batch.set(window._FB.docRef(COL,item.id),item));
     await batch.commit();
     setSyncDot('synced');
-  }catch(e){setSyncDot('error');console.error(e);}
+  }catch(e){setSyncDot('error');console.error('fbSetAll error',e);}
 }
 
+// ── LISTENER ──
 function startListener(){
-  onSnapshot(collection(db,COL),snap=>{
+  window._FB.onSnapshot(COL, snap=>{
     if(snap.empty){fbSetAll(DEFAULTS);return;}
-    inv=snap.docs.map(d=>d.data());
+    inv = snap.docs.map(d=>d.data());
     inv.sort((a,b)=>parseInt(a.id)-parseInt(b.id));
-    nid=Math.max(...inv.map(s=>parseInt(s.id)),24)+1;
-    render();setSyncDot('synced');
-  },err=>{
+    nid = Math.max(...inv.map(s=>parseInt(s.id)||0), 24)+1;
+    render();
+    setSyncDot('synced');
+  }, err=>{
     setSyncDot('error');
-    document.getElementById('inv').innerHTML='<div class="empty">⚠️ Connection error. Check internet.</div>';
+    $('inv').innerHTML='<div class="empty">⚠️ Connection error. Check internet.</div>';
   });
 }
 
+// ── HISTORY / UNDO ──
 function snapHist(){
   hist.push(clone(inv));
   if(hist.length>50)hist.shift();
-  document.getElementById('undo-btn').disabled=false;
+  $('undo-btn').disabled=false;
 }
 async function undo(){
   if(!hist.length)return;
   const prev=hist.pop();
-  if(!hist.length)document.getElementById('undo-btn').disabled=true;
+  if(!hist.length)$('undo-btn').disabled=true;
   await fbSetAll(prev);
 }
 
-function updateBrands(){
-  const cat=document.getElementById('f-cat').value;
-  const bs=document.getElementById('f-brand');
-  const ss=document.getElementById('f-style');
+// ── RENDER ──
+function render(){
+  const filtered = activeFilter==='All' ? inv : inv.filter(s=>(s.cat||'T-Shirt')===activeFilter);
+  const brands = [...new Set(filtered.map(s=>s.brand))];
+  $('grand-total').textContent = inv.reduce((a,s)=>a+(parseInt(s.qty)||0),0);
+  const el = $('inv');
+  if(!filtered.length){
+    el.innerHTML=`<div class="empty">${activeFilter==='All'?'No items yet. Add some above!':'No '+activeFilter+' items yet.'}</div>`;
+    return;
+  }
+  el.innerHTML = brands.map(brand=>{
+    const items = filtered.filter(s=>s.brand===brand);
+    const tot = items.reduce((a,s)=>a+(parseInt(s.qty)||0),0);
+    const dot = BC[brand]||'#888';
+    const cards = items.map(s=>{
+      const iN = newIds.has(String(s.id));
+      return `<div class="shirt-card">
+        <button class="del-btn" data-id="${s.id}">✕</button>
+        <div class="card-cat">${esc(s.cat||'T-Shirt')}</div>
+        <div class="lbl-style">${esc(s.style||'')}${iN?'<span class="new-badge">new</span>':''}</div>
+        <span class="color-size">${esc(s.color)} · ${esc(s.size)}</span>
+        ${s.note?`<div class="card-note">${esc(s.note)}</div>`:''}
+        <div class="qty-row"><div class="qty-ctrl">
+          <button class="qty-btn" data-id="${s.id}" data-delta="-1">−</button>
+          <span class="qty-num">${s.qty}</span>
+          <button class="qty-btn" data-id="${s.id}" data-delta="1">+</button>
+        </div></div>
+      </div>`;
+    }).join('');
+    return `<div class="brand-section">
+      <div class="brand-header">
+        <span class="brand-dot" style="background:${dot}"></span>
+        <span class="brand-name">${esc(brand)}</span>
+        <span class="brand-total">${tot} item${tot!==1?'s':''}</span>
+      </div>
+      <div class="shirt-grid">${cards}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── DELEGATED CLICK HANDLERS (no inline onclick needed) ──
+document.getElementById('inv').addEventListener('click', async e=>{
+  const delBtn = e.target.closest('.del-btn');
+  const qtyBtn = e.target.closest('.qty-btn');
+  if(delBtn){
+    if(!confirm('Remove this item?'))return;
+    snapHist();
+    await fbDelete(delBtn.dataset.id);
+  }
+  if(qtyBtn){
+    const id = qtyBtn.dataset.id;
+    const delta = parseInt(qtyBtn.dataset.delta);
+    const s = inv.find(x=>String(x.id)===String(id));
+    if(!s)return;
+    const nq = Math.max(0, s.qty+delta);
+    if(nq===s.qty)return;
+    if(!debTimers[id])snapHist();
+    clearTimeout(debTimers[id]);
+    debTimers[id]=setTimeout(()=>delete debTimers[id],1500);
+    if(nq===0) await fbDelete(id);
+    else await fbSet({...s,qty:nq});
+  }
+});
+
+// ── FILTER ──
+function setFilter(cat){
+  activeFilter=cat;
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  $('f-'+cat).classList.add('active');
+  render();
+}
+document.querySelectorAll('.cat-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>setFilter(btn.id.replace('f-','')));
+});
+
+// ── MANUAL FORM ──
+$('f-cat').addEventListener('change',()=>{
+  const cat=$('f-cat').value;
+  const bs=$('f-brand'), ss=$('f-style');
   bs.innerHTML='<option value="">Select...</option>';
   ss.innerHTML='<option value="">Select...</option>';
   if(!cat||!CATALOG[cat])return;
   CATALOG[cat].brands.forEach(b=>{const o=document.createElement('option');o.value=b;o.textContent=b;bs.appendChild(o);});
   CATALOG[cat].styles.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;ss.appendChild(o);});
-  checkCustomBrand();checkCustomStyle();
-}
-function checkCustomBrand(){
-  const v=document.getElementById('f-brand').value;
-  document.getElementById('brand-custom-wrap').classList.toggle('show',v==='Other / Type own');
-}
-function checkCustomStyle(){
-  const v=document.getElementById('f-style').value;
-  document.getElementById('style-custom-wrap').classList.toggle('show',v==='Other / Type own');
-}
-function checkCustomColor(){
-  const v=document.getElementById('f-color').value;
-  document.getElementById('color-custom-wrap').classList.toggle('show',v==='Other / Type own');
-}
-function setFilter(cat){
-  activeFilter=cat;
-  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('f-'+cat).classList.add('active');
-  render();
-}
+  $('brand-custom-wrap').classList.remove('show');
+  $('style-custom-wrap').classList.remove('show');
+});
+$('f-brand').addEventListener('change',()=>$('brand-custom-wrap').classList.toggle('show',$('f-brand').value==='Other / Type own'));
+$('f-style').addEventListener('change',()=>$('style-custom-wrap').classList.toggle('show',$('f-style').value==='Other / Type own'));
+$('f-color').addEventListener('change',()=>$('color-custom-wrap').classList.toggle('show',$('f-color').value==='Other / Type own'));
 
-async function addItem(){
-  const cat=document.getElementById('f-cat').value;
-  let brand=document.getElementById('f-brand').value;
-  let style=document.getElementById('f-style').value||'Other';
-  let color=document.getElementById('f-color').value;
-  const size=document.getElementById('f-size').value;
-  const qty=Math.max(1,parseInt(document.getElementById('f-qty').value)||1);
-  const note=document.getElementById('f-note').value.trim();
-  if(brand==='Other / Type own')brand=document.getElementById('f-brand-custom').value.trim()||'Other';
-  if(style==='Other / Type own')style=document.getElementById('f-style-custom').value.trim()||'Other';
-  if(color==='Other / Type own')color=document.getElementById('f-color-custom').value.trim()||'Other';
+$('add-btn').addEventListener('click', async()=>{
+  const cat=$('f-cat').value;
+  let brand=$('f-brand').value;
+  let style=$('f-style').value||'Other';
+  let color=$('f-color').value;
+  const size=$('f-size').value;
+  const qty=Math.max(1,parseInt($('f-qty').value)||1);
+  const note=$('f-note').value.trim();
+  if(brand==='Other / Type own')brand=$('f-brand-custom').value.trim()||'Other';
+  if(style==='Other / Type own')style=$('f-style-custom').value.trim()||'Other';
+  if(color==='Other / Type own')color=$('f-color-custom').value.trim()||'Other';
   if(!cat||!brand||!color||!size){alert('Please select Category, Brand, Color, and Size.');return;}
   snapHist();
   const ex=inv.find(s=>s.cat===cat&&s.brand===brand&&s.style===style&&s.color===color&&s.size===size);
   if(ex){newIds.add(String(ex.id));await fbSet({...ex,qty:ex.qty+qty});}
   else{const id=String(nid++);newIds.add(id);await fbSet({id,cat,brand,style,color,size,qty,note});}
-  ['f-cat','f-brand','f-style','f-color','f-size'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('f-qty').value='1';
-  document.getElementById('f-note').value='';
-  document.getElementById('f-brand-custom').value='';
-  document.getElementById('f-style-custom').value='';
-  document.getElementById('f-color-custom').value='';
-  ['brand-custom-wrap','style-custom-wrap','color-custom-wrap'].forEach(id=>document.getElementById(id).classList.remove('show'));
-  document.getElementById('f-brand').innerHTML='<option value="">Select category first</option>';
-  document.getElementById('f-style').innerHTML='<option value="">Select...</option>';
-  const fb=document.getElementById('add-fb');
-  fb.style.display='block';
-  setTimeout(()=>fb.style.display='none',2500);
+  ['f-cat','f-brand','f-style','f-color','f-size'].forEach(id=>$(id).value='');
+  $('f-qty').value='1';$('f-note').value='';
+  $('f-brand-custom').value='';$('f-style-custom').value='';$('f-color-custom').value='';
+  ['brand-custom-wrap','style-custom-wrap','color-custom-wrap'].forEach(id=>$(id).classList.remove('show'));
+  $('f-brand').innerHTML='<option value="">Select category first</option>';
+  $('f-style').innerHTML='<option value="">Select...</option>';
+  $('add-fb').style.display='block';
+  setTimeout(()=>$('add-fb').style.display='none',2500);
   setTimeout(()=>{newIds.clear();render();},3000);
-}
+});
+$('undo-btn').addEventListener('click', undo);
 
-async function removeItem(id){
-  if(!confirm('Remove this item?'))return;
-  snapHist();
-  await fbDelete(id);
-}
-
-async function changeQty(id,delta){
-  const s=inv.find(x=>String(x.id)===String(id));
-  if(!s)return;
-  const nq=Math.max(0,s.qty+delta);
-  if(nq===s.qty)return;
-  if(!debTimers[id])snapHist();
-  clearTimeout(debTimers[id]);
-  debTimers[id]=setTimeout(()=>delete debTimers[id],1500);
-  if(nq===0)await fbDelete(id);
-  else await fbSet({...s,qty:nq});
-}
-
-function exportCSV(){
+// ── MENU ──
+$('menu-btn').addEventListener('click',()=>{
+  const d=$('drawer');
+  d.classList.toggle('open');
+  $('menu-btn').textContent=d.classList.contains('open')?'✕ Close':'⋮ Menu';
+});
+$('export-btn').addEventListener('click',()=>{
   const rows=[['Category','Brand','Style','Color','Size','Qty','Notes']];
   const cats=[...new Set(inv.map(s=>s.cat||'T-Shirt'))];
   cats.forEach(c=>{
@@ -401,52 +497,53 @@ function exportCSV(){
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
   a.download='StitchPunch_'+new Date().toISOString().slice(0,10)+'.csv';
-  a.click();toggleMenu();
-}
+  a.click();
+  $('drawer').classList.remove('open');$('menu-btn').textContent='⋮ Menu';
+});
+$('reset-btn').addEventListener('click', async()=>{
+  if(!confirm('Reset to original inventory? All changes will be lost.'))return;
+  snapHist();await fbSetAll(DEFAULTS);
+  $('drawer').classList.remove('open');$('menu-btn').textContent='⋮ Menu';
+});
 
-async function resetToDefault(){
-  if(!confirm('Reset to original recount? All changes will be lost.'))return;
-  snapHist();await fbSetAll(DEFAULTS);toggleMenu();
-}
-
-function toggleMenu(){
-  const d=document.getElementById('drawer');
-  d.classList.toggle('open');
-  document.getElementById('menu-btn').textContent=d.classList.contains('open')?'✕ Close':'⋮ Menu';
-}
-
-function autoGrow(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,110)+'px';}
-function closeResp(){document.getElementById('ai-resp').style.display='none';}
+// ── RESPONSE BAR ──
 function showResp(msg,err){
-  const box=document.getElementById('ai-resp');
+  const box=$('ai-resp');
   box.className='ai-resp '+(err?'err':'ok');
-  document.getElementById('ai-msg').textContent=msg;
+  $('ai-msg').textContent=msg;
   box.style.display='block';
-  if(!err)setTimeout(closeResp,7000);
+  if(!err)setTimeout(()=>box.style.display='none',7000);
 }
+$('ai-close-btn').addEventListener('click',()=>$('ai-resp').style.display='none');
 
+// ── AI BAR ──
 async function runAI(){
-  const input=document.getElementById('ai-input').value.trim();
+  const input=$('ai-input').value.trim();
   if(!input)return;
-  const btn=document.getElementById('ai-btn');
-  btn.disabled=true;btn.textContent='...';closeResp();
-  const sys=`You are an inventory assistant for StitchPunch, an embroidery business in Brooklyn NY.
+  const btn=$('ai-btn');
+  btn.disabled=true;btn.textContent='...';
+  $('ai-resp').style.display='none';
+  const sys=`You are an inventory assistant for StitchPunch, a custom embroidery and apparel business in Brooklyn NY.
 Current inventory: ${JSON.stringify(inv.map(s=>({id:s.id,cat:s.cat,brand:s.brand,style:s.style,color:s.color,size:s.size,qty:s.qty})))}
 Valid categories: T-Shirt, Hat, Hoodie, Jacket, Other
 Valid sizes: One Size, XS, S, M, L, XL, 2XL, 3XL
-For add: match existing entry if cat+brand+style+color+size all match, else create new.
-For remove: match by cat+brand+color+size.
-Respond ONLY with JSON (no markdown): {"action":"add|remove|none","items":[{"cat":"T-Shirt","brand":"","style":"","color":"","size":"","qty":1,"note":""}],"message":""}
-If unclear, use action none.`;
+BRAND ALIASES: BC/Bella=Bella Canvas, GD=Gildan, NL=Next Level, CC=Comfort Colors, SW/Shaka=Shaka Wear
+SIZE ALIASES: s=S,m=M,l=L,xl=XL,xxl/2x=2XL,xxxl/3x=3XL,small=S,medium=M,large=L,extra large=XL
+QUANTITY: two=2,three=3,four=4,a couple=2,a few=3,half dozen=6
+CATEGORY: hoodie/zip/pullover→Hoodie, hat/cap/trucker/snapback/beanie→Hat, jacket/shell/fleece→Jacket, default→T-Shirt
+For ADD: match cat+brand+style+color+size to existing, increment qty. Else create new.
+For REMOVE: match brand+color+size, reduce qty (delete if 0).
+Respond ONLY with raw JSON no markdown:
+{"action":"add|remove|none","items":[{"cat":"T-Shirt","brand":"","style":"","color":"","size":"","qty":1,"note":""}],"message":""}`;
   try{
-    const res=await fetch('/.netlify/functions/ai',{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({system:sys,messages:[{role:'user',content:input}]})
+      headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1500,system:sys,messages:[{role:'user',content:input}]})
     });
     if(!res.ok)throw new Error('HTTP '+res.status);
     const data=await res.json();
-    if(!data||!data.content)throw new Error('Bad response from server');
+    if(data.error)throw new Error(data.error.message||'API error');
     const txt=data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
     const parsed=JSON.parse(txt.replace(/```json\s*/g,'').replace(/```/g,'').trim());
     if(parsed.action==='none'){showResp(parsed.message||'Could not understand.',false);return;}
@@ -462,13 +559,8 @@ If unclear, use action none.`;
       const note=(item.note||'').trim();
       if(!color||!size)continue;
       if(parsed.action==='remove'){
-        const ex=inv.find(s=>s.cat===cat&&s.brand===brand&&s.color===color&&s.size===size)
-               ||inv.find(s=>s.brand===brand&&s.color===color&&s.size===size);
-        if(ex){
-          const nq=Math.max(0,ex.qty-qty);
-          if(nq===0)await fbDelete(ex.id);
-          else await fbSet({...ex,qty:nq});
-        }
+        const ex=inv.find(s=>s.brand===brand&&s.color===color&&s.size===size);
+        if(ex){const nq=Math.max(0,ex.qty-qty);if(nq===0)await fbDelete(ex.id);else await fbSet({...ex,qty:nq});}
       }else{
         const ex=inv.find(s=>s.cat===cat&&s.brand===brand&&s.style===style&&s.color===color&&s.size===size);
         if(ex){newIds.add(String(ex.id));await fbSet({...ex,qty:ex.qty+qty});}
@@ -482,73 +574,118 @@ If unclear, use action none.`;
     showResp('Something went wrong: '+e.message,true);
   }
   btn.disabled=false;btn.innerHTML='✨ AI';
-  const ta=document.getElementById('ai-input');
-  ta.value='';ta.style.height='auto';
+  $('ai-input').value='';$('ai-input').style.height='auto';
 }
+$('ai-btn').addEventListener('click',runAI);
+$('ai-input').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();runAI();}});
+$('ai-input').addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,110)+'px';});
 
-function render(){
-  const filtered=activeFilter==='All'?inv:inv.filter(s=>(s.cat||'T-Shirt')===activeFilter);
-  const brands=[...new Set(filtered.map(s=>s.brand))];
-  document.getElementById('grand-total').textContent=inv.reduce((a,s)=>a+s.qty,0);
-  const el=document.getElementById('inv');
-  if(!filtered.length){
-    el.innerHTML=`<div class="empty">${activeFilter==='All'?'No items yet. Add some above!':'No '+activeFilter+' items yet.'}</div>`;
-    return;
+// ── INVOICE UPLOAD ──
+function showInvoicePreview(){
+  $('inv-preview-title').textContent=invoiceItems.length+' item'+(invoiceItems.length!==1?'s':'')+' found in invoice';
+  $('inv-preview-list').innerHTML=invoiceItems.map((it,i)=>`
+    <div class="invoice-preview-item">
+      <span class="inv-qty-badge">${it.qty||1}×</span>
+      <span style="flex:1"><strong>${esc(it.brand||'')}</strong> ${esc(it.style||'')} — ${esc(it.color||'')} / ${esc(it.size||'')}${it.note?` <span style="color:#bbb;font-size:11px">· ${esc(it.note)}</span>`:''}</span>
+      <button class="inv-remove" data-inv-idx="${i}">✕</button>
+    </div>`).join('');
+  $('invoice-preview').classList.add('show');
+}
+function dismissInvoice(){
+  invoiceItems=[];
+  $('invoice-preview').classList.remove('show');
+}
+$('inv-cancel-btn').addEventListener('click',dismissInvoice);
+$('inv-preview-list').addEventListener('click',e=>{
+  const btn=e.target.closest('.inv-remove');
+  if(!btn)return;
+  const idx=parseInt(btn.dataset.invIdx);
+  invoiceItems.splice(idx,1);
+  if(!invoiceItems.length)dismissInvoice();
+  else showInvoicePreview();
+});
+$('inv-confirm-btn').addEventListener('click',async()=>{
+  if(!invoiceItems.length)return;
+  const btn=$('inv-confirm-btn');
+  btn.disabled=true;btn.textContent='Adding...';
+  const itemsToAdd=[...invoiceItems];
+  snapHist();
+  for(const item of itemsToAdd){
+    const cat=(item.cat||'T-Shirt').trim();
+    const brand=(item.brand||'Other').trim();
+    const style=(item.style||'Other').trim();
+    const color=(item.color||'').trim();
+    const size=(item.size||'').trim();
+    const qty=Math.abs(parseInt(item.qty)||1);
+    const note=(item.note||'').trim();
+    if(!color||!size)continue;
+    const ex=inv.find(s=>s.cat===cat&&s.brand===brand&&s.style===style&&s.color===color&&s.size===size);
+    if(ex){newIds.add(String(ex.id));await fbSet({...ex,qty:ex.qty+qty});}
+    else{const id=String(nid++);newIds.add(id);await fbSet({id,cat,brand,style,color,size,qty,note});}
   }
-  el.innerHTML=brands.map(brand=>{
-    const items=filtered.filter(s=>s.brand===brand);
-    const tot=items.reduce((a,s)=>a+s.qty,0);
-    const dot=BC[brand]||'#888';
-    const cards=items.map(s=>{
-      const iN=newIds.has(String(s.id));
-      return `<div class="shirt-card">
-        <button class="del-btn" onclick="window._SP_del('${s.id}')">✕</button>
-        <div class="card-cat">${esc(s.cat||'T-Shirt')}</div>
-        <div class="lbl-style">${esc(s.style)}${iN?'<span class="new-badge">new</span>':''}</div>
-        <span class="color-size">${esc(s.color)} · ${esc(s.size)}</span>
-        ${s.note?`<div class="card-note">${esc(s.note)}</div>`:''}
-        <div class="qty-row">
-          <div class="qty-ctrl">
-            <button class="qty-btn" onclick="window._SP_chq('${s.id}',-1)">−</button>
-            <span class="qty-num">${s.qty}</span>
-            <button class="qty-btn" onclick="window._SP_chq('${s.id}',1)">+</button>
-          </div>
-        </div>
-      </div>`;
-    }).join('');
-    return `<div class="brand-section">
-      <div class="brand-header">
-        <span class="brand-dot" style="background:${dot}"></span>
-        <span class="brand-name">${esc(brand)}</span>
-        <span class="brand-total">${tot} item${tot!==1?'s':''}</span>
-      </div>
-      <div class="shirt-grid">${cards}</div>
-    </div>`;
-  }).join('');
-}
-
-// Expose ALL functions to global scope
-window._SP_del = removeItem;
-window._SP_chq = changeQty;
-window.addItem = addItem;
-window.undo = undo;
-window.toggleMenu = toggleMenu;
-window.exportCSV = exportCSV;
-window.resetToDefault = resetToDefault;
-window.setFilter = setFilter;
-window.updateBrands = updateBrands;
-window.checkCustomBrand = checkCustomBrand;
-window.checkCustomStyle = checkCustomStyle;
-window.checkCustomColor = checkCustomColor;
-window.runAI = runAI;
-window.autoGrow = autoGrow;
-window.closeResp = closeResp;
-
-document.getElementById('ai-input').addEventListener('keydown',e=>{
-  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();runAI();}
+  showResp('✓ '+itemsToAdd.length+' item'+(itemsToAdd.length!==1?'s':'')+' added from invoice!',false);
+  dismissInvoice();
+  btn.disabled=false;btn.textContent='✓ Add to Inventory';
+  setTimeout(()=>{newIds.clear();render();},3000);
 });
 
-startListener();
+async function parseInvoice(file){
+  const zoneText=$('inv-zone-text');
+  zoneText.textContent='⏳ Reading invoice...';
+  $('invoice-file').value='';
+  const base64=await new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=()=>res(r.result.split(',')[1]);
+    r.onerror=rej;
+    r.readAsDataURL(file);
+  });
+  const isPdf=file.type==='application/pdf';
+  try{
+    const msgContent=isPdf
+      ?[{type:'document',source:{type:'base64',media_type:'application/pdf',data:base64}},{type:'text',text:'Extract all inventory items.'}]
+      :[{type:'image',source:{type:'base64',media_type:file.type,data:base64}},{type:'text',text:'Extract all inventory items.'}];
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({
+        model:'claude-haiku-4-5-20251001',max_tokens:2000,
+        system:`You are an inventory parser for StitchPunch, an embroidery and apparel business.
+Read this invoice and extract every apparel/blank item ordered.
+Return ONLY a raw JSON array (no markdown, no explanation) of objects:
+[{"cat":"T-Shirt","brand":"","style":"","color":"","size":"","qty":1,"note":""}]
+Valid cats: T-Shirt, Hat, Hoodie, Jacket, Other. Default T-Shirt if unsure.
+Each line item = separate object. Different sizes/colors = separate objects.`,
+        messages:[{role:'user',content:msgContent}]
+      })
+    });
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    if(data.error)throw new Error(data.error.message||'API error');
+    const txt=data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+    const clean=txt.replace(/```json\s*/g,'').replace(/```/g,'').trim();
+    invoiceItems=JSON.parse(clean);
+    if(!Array.isArray(invoiceItems)||!invoiceItems.length)throw new Error('No items found');
+    showInvoicePreview();
+  }catch(e){
+    console.error('Invoice parse error:',e);
+    showResp('Could not read invoice: '+e.message,true);
+  }finally{
+    zoneText.innerHTML='📄 Drop invoice here or tap to upload &nbsp;·&nbsp; <strong style="color:#FF6A00">PDF, JPG, PNG</strong> — AI reads &amp; imports';
+  }
+}
+
+const invoiceFile=$('invoice-file');
+const invoiceZone=$('invoice-zone');
+invoiceFile.addEventListener('change',()=>{if(invoiceFile.files[0])parseInvoice(invoiceFile.files[0]);});
+invoiceZone.addEventListener('dragover',e=>{e.preventDefault();invoiceZone.classList.add('drag-over');});
+invoiceZone.addEventListener('dragleave',e=>{if(!invoiceZone.contains(e.relatedTarget))invoiceZone.classList.remove('drag-over');});
+invoiceZone.addEventListener('drop',e=>{
+  e.preventDefault();invoiceZone.classList.remove('drag-over');
+  const f=e.dataTransfer.files[0];if(f)parseInvoice(f);
+});
+
+// ── BOOT: wait for Firebase then start ──
+window.addEventListener('firebase-ready',startListener);
 </script>
 </body>
 </html>
